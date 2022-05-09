@@ -34,8 +34,7 @@ public class Day1{
     public static void main(String[] args){
         try {
             InputStream i = Day1.class.getClassLoader().getResourceAsStream("day1.txt");
-            Scanner s = new Scanner(i).useDelimiter("\\A}");
-            String instructions = s.hasNext() ?  s.next() : "";
+            String instructions = new String(i.readAllBytes());
             System.out.println("Part1: " + part1(instructions));
             System.out.println("Part2: " + part2(instructions));
         } catch (Exception e){
