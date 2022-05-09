@@ -1,4 +1,4 @@
-package com.adventofcode.year2015.year2015;
+package com.adventofcode.year2015;
 
 import com.google.common.collect.Streams;
 

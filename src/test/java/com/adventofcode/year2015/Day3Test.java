@@ -1,11 +1,7 @@
 
 package com.adventofcode.year2015;
 
-import com.adventofcode.year2015.year2015.Day2;
-import com.adventofcode.year2015.year2015.Day3;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

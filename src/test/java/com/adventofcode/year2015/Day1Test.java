@@ -1,6 +1,6 @@
 package com.adventofcode.year2015;
 import static org.junit.Assert.assertEquals;
-import com.adventofcode.year2015.year2015.Day1;
+
 import org.junit.Test;
 
 public class Day1Test {
