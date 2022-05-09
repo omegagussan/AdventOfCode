@@ -3,7 +3,6 @@ package com.adventofcode.year2015.year2015;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class Day1{
