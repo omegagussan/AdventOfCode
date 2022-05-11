@@ -1,43 +1,49 @@
 package com.adventofcode.year2015;
 
-import com.google.common.collect.Streams;
-
 import java.io.InputStream;
 import java.util.*;
 
 public class Day6 {
 
-    public static final String TOGGLE = "toggle";
-    public static final String OFF = "off";
-    public static final String ON = "on";
+    enum BulbOperationState {
+        TOGGLE,
+        OFF,
+        ON;
+
+        BulbOperationState fromString(String s){
+            var t = s.replaceAll("turn ", "").trim().toUpperCase();
+            return BulbOperationState.valueOf(t);
+        }
+    }
 
     record Pair(int x, int y){}
-    record Grid(Map<Pair, Boolean> state){
+    record Grid(Map<Pair, Integer> state){
         void on(int xc, int yx){
             var p = new Pair(xc, yx);
-            this.state.put(p, true);
+            this.state.put(p, 1);
         }
 
         void off(int xc, int yx){
             var p = new Pair(xc, yx);
-            this.state.put(p, false);
+            this.state.put(p, 0);
         }
 
         void toggle(int xc, int yx){
             var p = new Pair(xc, yx);
-            var curr = this.state.getOrDefault(p, false); //assume missing are off
-            this.state.put(p, !curr);
+            var curr = this.state.getOrDefault(p, 0); //assume missing are off
+            this.state.put(p, curr == 0 ? 1 : 0);
         }
 
         int count(){
-            return (int) this.state.values().stream().filter(aBoolean -> aBoolean).count();
+            return this.state.values().stream().reduce(Integer::sum).orElse(0);
         }
     }
 
     public static int part1(List<String> instructions) {
         var grid = new Grid(new HashMap<>());
         for (String i : instructions){
-            String operation = i.contains(TOGGLE) ? TOGGLE : i.contains(OFF) ? OFF : ON;
+            String operationString = i.split("\\d+", 2)[0];
+            BulbOperationState operation = BulbOperationState.OFF.fromString(operationString);
             String numberString = i.replaceAll("[^, 0-9]", "").replaceAll("\\s{2,}", " ").trim();
             int xFrom = Integer.parseInt(numberString.split(" ")[0].split(",")[0]);
             int xTo = Integer.parseInt(numberString.split(" ")[1].split(",")[0]);
