@@ -58,7 +58,7 @@ public class Day5 {
 
     public static void main(String[] args){
         try {
-            InputStream i = Day5.class.getClassLoader().getResourceAsStream("day5.txt");
+            InputStream i = Day5.class.getClassLoader().getResourceAsStream("2015/day5.txt");
             Scanner s = new Scanner(i).useDelimiter(System.lineSeparator());
             List<String> instructions = new ArrayList<>();
             while (s.hasNextLine()){

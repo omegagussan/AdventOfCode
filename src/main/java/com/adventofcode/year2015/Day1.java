@@ -32,7 +32,7 @@ public class Day1{
 
     public static void main(String[] args){
         try {
-            InputStream i = Day1.class.getClassLoader().getResourceAsStream("day1.txt");
+            InputStream i = Day1.class.getClassLoader().getResourceAsStream("2015/day1.txt");
             String instructions = new String(i.readAllBytes());
             System.out.println("Part1: " + part1(instructions));
             System.out.println("Part2: " + part2(instructions));

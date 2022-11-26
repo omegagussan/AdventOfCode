@@ -126,7 +126,7 @@ public class Day6 {
 
     public static void main(String[] args){
         try {
-            InputStream i = Day6.class.getClassLoader().getResourceAsStream("day6.txt");
+            InputStream i = Day6.class.getClassLoader().getResourceAsStream("2015/day6.txt");
             Scanner s = new Scanner(i).useDelimiter(System.lineSeparator());
             List<String> instructions = new ArrayList<>();
             while (s.hasNextLine()){
