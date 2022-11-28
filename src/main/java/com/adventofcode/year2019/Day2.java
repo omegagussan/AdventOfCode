@@ -4,6 +4,8 @@ package com.adventofcode.year2019;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 public class Day2 {
 
@@ -11,7 +13,8 @@ public class Day2 {
     public static final int TIMES_VALUE = 2;
     public static final int ABORT_VALUE = 99;
     public static final int TARGET_POS = 3;
-    public static final int NEXT_POS_STEP = 4;
+    public static final int NUMBER_OF_VALUES_IN_INSTRUCTION = 4;
+    public static final int PART_TWO_ANSWER = 19690720;
 
     enum OP_CODE{
         ADD(ADD_VALUE),
@@ -37,51 +40,67 @@ public class Day2 {
             }
         }
 
-        public ArrayList<Integer> apply(int currPos, ArrayList<Integer> state)
+        public ArrayList<Integer> apply(int currPos, ArrayList<Integer> memory)
             throws InterruptedException {
             if (this == ABORT){
                 throw new InterruptedException("its time to abort");
             }
-            final Integer termOneIndex = state.get(currPos + 1);
-            final Integer termTwoIndex = state.get(currPos + 2);
-            final Integer targetIndex = state.get(currPos + TARGET_POS);
+            final Integer parameterOne = memory.get(currPos + 1);
+            final Integer parameterTwo = memory.get(currPos + 2);
+            final Integer parameterThree = memory.get(currPos + TARGET_POS);
             switch (this){
-                case ADD -> state.set(targetIndex, state.get(termOneIndex) + state.get(termTwoIndex));
+                case ADD -> memory.set(parameterThree, memory.get(parameterOne) + memory.get(parameterTwo));
                 case TIMES -> {
-                    state.set(targetIndex, state.get(termOneIndex) * state.get(termTwoIndex));
+                    memory.set(parameterThree, memory.get(parameterOne) * memory.get(parameterTwo));
                 }
                 default -> throw new IllegalStateException("unknown OP_CODE");
             }
-            return state;
+            return memory;
         }
     }
 
     public static int part1(String instructions) {
-        ArrayList<Integer> state = doStateWork(instructions);
-        return state.get(0);
+        var memory = new ArrayList<>(
+            Arrays.stream(instructions.split(",")).map(Integer::valueOf).toList());
+        memory = operateOnMemory(memory);
+        return memory.get(0);
     }
 
-    static ArrayList<Integer> doStateWork(String instructions) {
-        var state = new ArrayList<>(
-            Arrays.stream(instructions.split(",")).map(Integer::valueOf).toList());
-        int currPos = 0;
+    static ArrayList<Integer> operateOnMemory(ArrayList<Integer> memory) {
+        int instructionPointer = 0;
         try {
             while (true){
-                OP_CODE currCode = OP_CODE.fromInt(state.get(currPos));
-                currCode.apply(currPos, state);
+                OP_CODE currCode = OP_CODE.fromInt(memory.get(instructionPointer));
+                currCode.apply(instructionPointer, memory);
 
                 //lookahead
-                currPos += NEXT_POS_STEP;
+                instructionPointer += NUMBER_OF_VALUES_IN_INSTRUCTION;
             }
         } catch (InterruptedException ignored){}
         //pos 0 when program ends.
-        return state;
+        return memory;
     }
 
-    //when enter basement
     public static int part2(String instructions) {
-        return 0;
+        final var memory = new ArrayList<>(
+            Arrays.stream(instructions.split(",")).map(Integer::valueOf).toList());
+        var argumentPairs = IntStream.range(0, 99).boxed().flatMap(noun -> IntStream.range(0, 99).mapToObj(verb -> new Pair(noun, verb))).toList();
+        AtomicReference<Pair> output = new AtomicReference<>();
+        var count = argumentPairs.stream().takeWhile(pair -> {
+            var memoryCopy = new ArrayList<>(memory);
+            memoryCopy.set(1, pair.noun);
+            memoryCopy.set(2, pair.verb);
+            memoryCopy = operateOnMemory(memoryCopy);
+            boolean shouldContinue = memoryCopy.get(0) != PART_TWO_ANSWER;
+            if (!shouldContinue){
+                output.set(pair);
+            }
+            return shouldContinue;
+        }).count();
+        return 100 * output.get().noun + output.get().verb;
     }
+
+    record Pair(Integer noun, Integer verb){}
 
     public static void main(String[] args){
         try {

@@ -16,8 +16,7 @@
 
 # Package Files #
 *.jar
-*.war
-*.nar
+*.warg
 *.ear
 *.zip
 *.tar.gz
