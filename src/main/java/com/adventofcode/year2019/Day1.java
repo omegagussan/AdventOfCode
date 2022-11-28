@@ -2,7 +2,6 @@ package com.adventofcode.year2019;
 
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.List;
 
 public class Day1{
 
