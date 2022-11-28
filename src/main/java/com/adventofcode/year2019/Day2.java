@@ -4,8 +4,12 @@ package com.adventofcode.year2019;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
+import one.util.streamex.StreamEx;
 
 public class Day2 {
 
@@ -81,22 +85,37 @@ public class Day2 {
         return memory;
     }
 
+    static <T> UnaryOperator<StreamEx<T>> takeUntil(Predicate<? super T> predicate){
+        var last = new AtomicReference<T>();
+        Predicate<? super T> wrapped = (Predicate<T>) t -> {
+            var outcome = predicate.test(t);
+            if (!outcome){
+                last.set(t);
+            }
+            return outcome;
+        };
+        return (stream -> StreamEx.of(
+            stream.takeWhile(wrapped).<List<T>>toListAndThen(ts -> {ts.add(last.get()); return ts;})));
+    }
+
+
+
+
     public static int part2(String instructions) {
         final var memory = new ArrayList<>(
             Arrays.stream(instructions.split(",")).map(Integer::valueOf).toList());
-        var argumentPairs = IntStream.range(0, 99).boxed().flatMap(noun -> IntStream.range(0, 99).mapToObj(verb -> new Pair(noun, verb))).toList();
-        AtomicReference<Pair> output = new AtomicReference<>();
-        var count = argumentPairs.stream().takeWhile(pair -> {
+        var argumentPairs = IntStream.range(0, 99)
+            .boxed()
+            .flatMap(noun -> IntStream.range(0, 99).mapToObj(verb -> new Pair(noun, verb)))
+            .toList();
+        var output = StreamEx.of(argumentPairs)
+            .chain(takeUntil(pair -> {
             var memoryCopy = new ArrayList<>(memory);
             memoryCopy.set(1, pair.noun);
             memoryCopy.set(2, pair.verb);
             memoryCopy = operateOnMemory(memoryCopy);
-            boolean shouldContinue = memoryCopy.get(0) != PART_TWO_ANSWER;
-            if (!shouldContinue){
-                output.set(pair);
-            }
-            return shouldContinue;
-        }).count();
+            return memoryCopy.get(0) != PART_TWO_ANSWER;
+        })).reduce((first, second) -> second);
         return 100 * output.get().noun + output.get().verb;
     }
 
