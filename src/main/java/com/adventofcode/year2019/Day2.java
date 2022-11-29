@@ -1,6 +1,8 @@
 package com.adventofcode.year2019;
 
 
+import static one.util.streamex.MoreCollectors.last;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,22 +87,6 @@ public class Day2 {
         return memory;
     }
 
-    static <T> UnaryOperator<StreamEx<T>> takeUntil(Predicate<? super T> predicate){
-        var last = new AtomicReference<T>();
-        Predicate<? super T> wrapped = (Predicate<T>) t -> {
-            var outcome = predicate.test(t);
-            if (!outcome){
-                last.set(t);
-            }
-            return outcome;
-        };
-        return (stream -> StreamEx.of(
-            stream.takeWhile(wrapped).<List<T>>toListAndThen(ts -> {ts.add(last.get()); return ts;})));
-    }
-
-
-
-
     public static int part2(String instructions) {
         final var memory = new ArrayList<>(
             Arrays.stream(instructions.split(",")).map(Integer::valueOf).toList());
@@ -108,14 +94,13 @@ public class Day2 {
             .boxed()
             .flatMap(noun -> IntStream.range(0, 99).mapToObj(verb -> new Pair(noun, verb)))
             .toList();
-        var output = StreamEx.of(argumentPairs)
-            .chain(takeUntil(pair -> {
+        var output = StreamEx.of(argumentPairs).takeWhileInclusive(pair -> {
             var memoryCopy = new ArrayList<>(memory);
             memoryCopy.set(1, pair.noun);
             memoryCopy.set(2, pair.verb);
             memoryCopy = operateOnMemory(memoryCopy);
             return memoryCopy.get(0) != PART_TWO_ANSWER;
-        })).reduce((first, second) -> second);
+        }).collect(last());
         return 100 * output.get().noun + output.get().verb;
     }
 
