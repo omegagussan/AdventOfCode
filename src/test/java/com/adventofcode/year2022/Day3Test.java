@@ -1,7 +1,7 @@
 package com.adventofcode.year2022;
 import static org.junit.Assert.assertEquals;
 
-import com.adventofcode.year2022.Day3.Backpack;
+import com.adventofcode.year2022.Day3.BackpackWithCompartment;
 import org.junit.Test;
 
 public class Day3Test {
@@ -47,21 +47,21 @@ public class Day3Test {
   @Test
   public void testPriority2() {
     String s = "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL";
-    var b = new Backpack(s);
+    var b = new BackpackWithCompartment(s);
     assertEquals(38, b.getPriority());
   }
 
   @Test
   public void testPriority() {
     String s = "vJrwpWtwJgWrhcsFMMfFFhFp";
-    var b = new Backpack(s);
+    var b = new BackpackWithCompartment(s);
     assertEquals(16, b.getPriority());
   }
 
   @Test
   public void testPriorityUpperCase() {
     String s = "PmmdzqPrVvPwwTWBwg";
-    var b = new Backpack(s);
+    var b = new BackpackWithCompartment(s);
     assertEquals(42, b.getPriority());
   }
 }
