@@ -6,26 +6,26 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class Day3 {
 
     static class BackpackWithCompartment {
         Set<String> pocket1;
-        List<String> pocket2;
+        Set<String> pocket2;
         BackpackWithCompartment(String backpackString){
             var arr = backpackString.split("");
             var len = arr.length;
-            var pocket1 = ArrayUtils.subarray(arr, 0, (int) (len / 2));
-            var pocket2 = ArrayUtils.subarray(arr, (int) (len / 2), len);
+            var pocket1 = ArrayUtils.subarray(arr, 0, len / 2);
+            var pocket2 = ArrayUtils.subarray(arr, len / 2, len);
             this.pocket1 = new HashSet<>(List.of(pocket1));
-            this.pocket2 = List.of(pocket2);
+            this.pocket2 = new HashSet<>(List.of(pocket2));
         }
 
         List<String> getCommonUnique(){ //no order
-          return this.pocket2.stream().filter(caseSensitiveChar -> this.pocket1.contains(caseSensitiveChar)).collect(
-              Collectors.toSet()).stream().toList();
+            var tmp = new HashSet<>(this.pocket1);
+            tmp.retainAll(pocket2); //union
+            return tmp.stream().toList();
         }
 
         int getPriority(){
