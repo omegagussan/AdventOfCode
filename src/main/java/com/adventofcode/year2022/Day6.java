@@ -3,44 +3,33 @@ package com.adventofcode.year2022;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class Day6 {
-
-    public static final String NEWLINE = "\n";
-
     public static int part1(String instructions) {
-        AtomicReference<Integer> res = new AtomicReference<>(0);
-        AtomicReference<Boolean> done = new AtomicReference<>(false);
-        Arrays.stream(instructions.split(NEWLINE))
-            .forEach(r -> IntStream.range(0, r.length()-3)
-                .mapToObj(i -> new HashSet(Arrays.stream(r.substring(i, i + 4).split("")).toList()))
-                .forEach(set -> {
-                if (set.size() == 4){
-                    done.set(true);
-                } else if (!done.get()){
-                    res.getAndSet(res.get() + 1);
-                }
-            }));
-        return res.get() + 4;
+        return solution(instructions, 4);
     }
 
     public static int part2(String instructions) {
-        AtomicReference<Integer> res = new AtomicReference<>(0);
-        AtomicReference<Boolean> done = new AtomicReference<>(false);
-        Arrays.stream(instructions.split(NEWLINE))
-            .forEach(r -> IntStream.range(0, r.length()-13)
-                .mapToObj(i -> new HashSet(Arrays.stream(r.substring(i, i + 14).split("")).toList()))
-                .forEach(set -> {
-                    if (set.size() == 14){
-                        done.set(true);
-                    } else if (!done.get()){
-                        res.getAndSet(res.get() + 1);
-                    }
-                }));
-        return res.get() + 14;
+        return solution(instructions, 14);
+    }
+
+    record Pair(Integer startOfSet, Set setOfChar){
+        int endOfSet(int messageLength){
+            return this.startOfSet + messageLength;
+        }
+    }
+
+    private static int solution(String instructions, int messageLength) {
+        return IntStream.range(0, instructions.length()- messageLength + 1)
+            .mapToObj(i -> new Pair(i, setOfSubset(instructions, messageLength, i)))
+            .filter(p -> p.setOfChar.size() == messageLength).findFirst().orElseThrow(IllegalStateException::new).endOfSet(messageLength);
+    }
+
+    private static HashSet<String> setOfSubset(String instructions, int messageLength, int i) {
+        return new HashSet<>(
+            Arrays.stream(instructions.substring(i, i + messageLength).split("")).toList());
     }
 
     public static void main(String[] args){
