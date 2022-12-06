@@ -43,4 +43,12 @@ public class Day6Test {
         Day6.part1("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"));
   }
 
+  @Test
+  public void testExample5() {
+    assertEquals(
+        "simple case",
+        19,
+        Day6.part2("mjqjpqmgbljsphdztnvjfqwrcgsmlb"));
+  }
+
 }

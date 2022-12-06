@@ -27,8 +27,20 @@ public class Day6 {
         return res.get() + 4;
     }
 
-    public static String part2(String instructions) {
-        return "b";
+    public static int part2(String instructions) {
+        AtomicReference<Integer> res = new AtomicReference<>(0);
+        AtomicReference<Boolean> done = new AtomicReference<>(false);
+        Arrays.stream(instructions.split(NEWLINE))
+            .forEach(r -> IntStream.range(0, r.length()-13)
+                .mapToObj(i -> new HashSet(Arrays.stream(r.substring(i, i + 14).split("")).toList()))
+                .forEach(set -> {
+                    if (set.size() == 14){
+                        done.set(true);
+                    } else if (!done.get()){
+                        res.getAndSet(res.get() + 1);
+                    }
+                }));
+        return res.get() + 14;
     }
 
     public static void main(String[] args){
