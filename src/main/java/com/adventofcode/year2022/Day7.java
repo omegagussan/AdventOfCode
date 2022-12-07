@@ -1,31 +1,49 @@
 package com.adventofcode.year2022;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Day7 {
     public static int part1(String instructions) {
         Map<String, Map<String, Integer>> tree = getTree(instructions);
-        //var s = getSize(tree, tree.get("/"), "/");
-        return tree.entrySet().stream().map(e -> getSize(tree, e.getValue(), e.getKey())).mapToInt(Integer::intValue).filter(i -> i <= 100000).sum();
+        return tree.entrySet().stream().map(e -> getSize(tree, e.getValue())).mapToInt(Integer::intValue).filter(i -> i <= 100000).sum();
     }
 
-    public static Integer getSize(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode, String curr){
+    public static Integer getSize(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode, Integer curr){
         if (currNode == null){
-            return 0;
+            return curr;
         }
-        var s = currNode.entrySet().stream().map(e -> {
+        return currNode.entrySet().stream().map(e -> {
             if (e.getValue() == null){
-                return getSize(tree, tree.get(e.getKey()), e.getKey());
+                return getSize(tree, tree.get(e.getKey()));
             }
             return e.getValue();
-        }).mapToInt(Integer::intValue).sum();
-        return s;
+        }).mapToInt(Integer::intValue).sum() + curr;
     }
 
-    private static Map<String, Map<String, Integer>> getTree(String instructions) {
+    public static List<Integer> getSizeList(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode, List<Integer> curr){
+        if (currNode == null){
+            return curr;
+        }
+        curr.addAll(currNode.entrySet().stream().map(e -> {
+            if (e.getValue() == null){
+                return getSize(tree, tree.get(e.getKey()));
+            }
+            return null;
+        }).filter(Objects::nonNull).toList());
+        return curr;
+    }
+
+    public static Integer getSize(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode){
+        return getSize(tree, currNode, 0);
+    }
+
+    protected static Map<String, Map<String, Integer>> getTree(String instructions) {
         String path = "";
         Map<String, Map<String, Integer>> tree = new HashMap<>();
         var rows = Arrays.stream(instructions.split("\n")).toList();
@@ -64,11 +82,21 @@ public class Day7 {
             }
             pos++;
         }
+        if (lsOngoing != null){
+            tree.put(path, new HashMap<>(lsOngoing));
+        }
         return tree;
     }
 
     public static int part2(String instructions) {
-        return 3;
+        int freeSpaceTarget = 30000000;
+        int spaceTotal = 70000000;
+        Map<String, Map<String, Integer>> tree = getTree(instructions);
+        Integer treeSize = getSize(tree, tree.get("/"));
+        int unusedSpace = spaceTotal - treeSize;
+        int spaceTarget = freeSpaceTarget - unusedSpace;
+        var dirSizes = tree.entrySet().stream().flatMap(e -> getSizeList(tree, tree.get(e.getKey()), new ArrayList<>()).stream()).toList();
+        return dirSizes.stream().filter(i -> i >= spaceTarget).sorted().findFirst().get();
     }
 
     public static void main(String[] args){
