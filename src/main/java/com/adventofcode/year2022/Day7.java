@@ -9,9 +9,14 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Day7 {
+
+    public static final String NEWLINE = "\n";
+    public static final String DIR_PATTERN = "dir ";
+    public static final String COMMAND = "$";
+
     public static int part1(String instructions) {
         Map<String, Map<String, Integer>> tree = getTree(instructions);
-        return tree.entrySet().stream().map(e -> getSize(tree, e.getValue())).mapToInt(Integer::intValue).filter(i -> i <= 100000).sum();
+        return tree.values().stream().map(stringIntegerMap -> getSize(tree, stringIntegerMap)).mapToInt(Integer::intValue).filter(i -> i <= 100000).sum();
     }
 
     public static Integer getSize(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode, Integer curr){
@@ -26,7 +31,7 @@ public class Day7 {
         }).mapToInt(Integer::intValue).sum() + curr;
     }
 
-    public static List<Integer> getSizeList(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode, List<Integer> curr){
+    public static List<Integer> getDirectorySizeList(Map<String, Map<String, Integer>> tree, Map<String, Integer> currNode, List<Integer> curr){
         if (currNode == null){
             return curr;
         }
@@ -34,7 +39,7 @@ public class Day7 {
             if (e.getValue() == null){
                 return getSize(tree, tree.get(e.getKey()));
             }
-            return null;
+            return null; //this is to only sum directories
         }).filter(Objects::nonNull).toList());
         return curr;
     }
@@ -46,17 +51,17 @@ public class Day7 {
     protected static Map<String, Map<String, Integer>> getTree(String instructions) {
         String path = "";
         Map<String, Map<String, Integer>> tree = new HashMap<>();
-        var rows = Arrays.stream(instructions.split("\n")).toList();
+        var rows = Arrays.stream(instructions.split(NEWLINE)).toList();
 
         int pos = 0;
         Map<String, Integer> lsOngoing = null;
         while (pos < rows.size()){
             var r = rows.get(pos);
-            if(lsOngoing != null && !r.startsWith("$")){
-                if (r.contains("dir")){
-                    var t = r.split("dir ");
+            if(lsOngoing != null && !r.startsWith(COMMAND)){
+                if (r.contains(DIR_PATTERN)){
+                    var t = r.split(DIR_PATTERN);
                     var dir  = t[t.length -1];
-                    lsOngoing.put((path + "/" + dir).replaceAll("//", "/"), null);
+                    lsOngoing.put(concatPath(path, dir), null);
                 } else {
                     var t = r.split(" ");
                     lsOngoing.put(t[1], Integer.valueOf(t[0]));
@@ -68,16 +73,16 @@ public class Day7 {
                 tree.put(path, new HashMap<>(lsOngoing));
                 lsOngoing = null;
             }
-            if (r.startsWith("$ ls")){
+            if (r.startsWith(COMMAND + " ls")){
                 lsOngoing = new HashMap<>();
             } else if (r.startsWith("$ cd")){
                 switch (r) {
-                    case "$ cd .." -> {
+                    case COMMAND + " cd .." -> {
                         var cutIdx = path.lastIndexOf("/");
                         path = path.substring(0, cutIdx);
                     }
-                    case "$ cd /" -> path = "/";
-                    case default -> path = (path + "/" +  r.substring(5)).replaceAll("//", "/");
+                    case COMMAND + " cd /" -> path = "/";
+                    case default -> path = concatPath(path, r.substring(5));
                 }
             }
             pos++;
@@ -88,6 +93,10 @@ public class Day7 {
         return tree;
     }
 
+    private static String concatPath(String path, String dir) {
+        return (path + "/" + dir).replaceAll("//", "/");
+    }
+
     public static int part2(String instructions) {
         int freeSpaceTarget = 30000000;
         int spaceTotal = 70000000;
@@ -95,7 +104,7 @@ public class Day7 {
         Integer treeSize = getSize(tree, tree.get("/"));
         int unusedSpace = spaceTotal - treeSize;
         int spaceTarget = freeSpaceTarget - unusedSpace;
-        var dirSizes = tree.entrySet().stream().flatMap(e -> getSizeList(tree, tree.get(e.getKey()), new ArrayList<>()).stream()).toList();
+        var dirSizes = tree.entrySet().stream().flatMap(e -> getDirectorySizeList(tree, tree.get(e.getKey()), new ArrayList<>()).stream()).toList();
         return dirSizes.stream().filter(i -> i >= spaceTarget).sorted().findFirst().get();
     }
 
