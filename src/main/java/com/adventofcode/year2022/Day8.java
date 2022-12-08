@@ -7,10 +7,12 @@ import com.adventofcode.utils.StringMatrixParser;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,15 +38,15 @@ public class Day8 {
     }
 
     @NotNull
-    private static HashSet<Coord> getHashSet(String[][] matrix) {
-        var visible = List.of(
-        IntStream.range(0, matrix.length).mapToObj(value -> new Coord(value, 0)).toList(),
-        IntStream.range(0, matrix.length).mapToObj(value -> new Coord(value, matrix[0].length-1)).toList(),
-        IntStream.range(0, matrix[0].length).mapToObj(value -> new Coord(0, value)).toList(),
-        IntStream.range(0, matrix[0].length).mapToObj(value -> new Coord(matrix.length-1, value)).toList()
-        ).stream().flatMap(coords -> coords.stream()).collect(Collectors.toSet());
-        var visibleHashSet = new HashSet<>(visible);
-        return visibleHashSet;
+    private static HashSet<Coord> getHashSet(Integer[][] matrix) {
+        return Stream.of(
+            IntStream.range(0, matrix.length).mapToObj(value -> new Coord(value, 0)).toList(),
+            IntStream.range(0, matrix.length)
+                .mapToObj(value -> new Coord(value, matrix[0].length - 1)).toList(),
+            IntStream.range(0, matrix[0].length).mapToObj(value -> new Coord(0, value)).toList(),
+            IntStream.range(0, matrix[0].length)
+                .mapToObj(value -> new Coord(matrix.length - 1, value)).toList()
+        ).flatMap(Collection::stream).collect(Collectors.toCollection(HashSet::new));
     }
 
     public static int getScore(Integer[][] intMatrix, Integer[][] transposedMatrix, int i, int j) {
@@ -56,35 +58,27 @@ public class Day8 {
         return ls * rs * us * ds;
     }
 
-    public static int part1(String instructions) {
-        var matrix = StringMatrixParser.parse(instructions, "\n", "");
-        var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
-        var transposedMatrix = StringMatrixParser.transposeGeneric(intMatrix, Integer.class);
+    public static int part1(Integer[][] intMatrix, Integer[][] transposedMatrix) {
+        HashSet<Coord> visibleHashSet = getHashSet(intMatrix);
 
-        HashSet<Coord> visibleHashSet = getHashSet(matrix);
+        IntStream.range(0, intMatrix.length).boxed()
+            .flatMap(i -> IntStream.range(0, intMatrix[0].length)
+                .mapToObj(j -> new Coord(i, j))).forEach(coord -> {
+                var los = slizeRow(intMatrix, coord.i, 0, coord.j);
+                var los2 = reverse(slizeRow(intMatrix, coord.i, coord.j +1 , intMatrix.length), Integer.class);
+                var los3 = slizeRow(transposedMatrix, coord.j, 0, coord.i);
+                var los4 = reverse(slizeRow(transposedMatrix, coord.j, coord.i +1 , transposedMatrix.length), Integer.class);
+                if (leavesMap(los, coord.getValue(intMatrix)) ||
+                    leavesMap(los2, coord.getValue(intMatrix)) ||
+                    leavesMap(los3, coord.getValue(intMatrix)) ||
+                    leavesMap(los4, coord.getValue(intMatrix))
+                ) {visibleHashSet.add(coord);}
+            });
 
-        for (int i=1; i < intMatrix.length -1; i++){
-            for (int j=1; j < intMatrix[0].length -1; j++){
-                var elem= new Coord(i, j);
-                var los = slizeRow(intMatrix, i, 0, j);
-                var los2 = reverse(slizeRow(intMatrix, i, j +1 , intMatrix.length), Integer.class);
-                var los3 = slizeRow(transposedMatrix, j, 0, i);
-                var los4 = reverse(slizeRow(transposedMatrix, j, i +1 , transposedMatrix.length), Integer.class);
-                if (leavesMap(los, elem.getValue(intMatrix)) ||
-                    leavesMap(los2, elem.getValue(intMatrix)) ||
-                    leavesMap(los3, elem.getValue(intMatrix)) ||
-                    leavesMap(los4, elem.getValue(intMatrix))
-                ) {visibleHashSet.add(elem);}
-            }
-        }
         return visibleHashSet.size();
     }
 
-    public static int part2(String instructions) {
-        var matrix = StringMatrixParser.parse(instructions, "\n", "");
-        var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
-        var transposedMatrix = StringMatrixParser.transposeGeneric(intMatrix, Integer.class);
-
+    public static int part2(Integer[][] intMatrix, Integer[][] transposedMatrix) {
         return IntStream.range(0, intMatrix.length).boxed()
             .flatMap(i -> IntStream.range(0, intMatrix[0].length)
                 .mapToObj(j -> new Coord(i, j)))
@@ -96,8 +90,11 @@ public class Day8 {
         try {
             InputStream i = Day8.class.getClassLoader().getResourceAsStream("2022/day8.txt");
             String instructions = new String(i.readAllBytes());
-            System.out.println("Part1: " + part1(instructions));
-            System.out.println("Part2: " + part2(instructions));
+            var matrix = StringMatrixParser.parse(instructions, "\n", "");
+            var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
+            var transposedMatrix = StringMatrixParser.transposeGeneric(intMatrix, Integer.class);
+            System.out.println("Part1: " + part1(intMatrix, transposedMatrix));
+            System.out.println("Part2: " + part2(intMatrix, transposedMatrix));
         } catch (Exception e){
             e.printStackTrace();
         }

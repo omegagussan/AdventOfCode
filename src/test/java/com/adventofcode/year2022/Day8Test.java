@@ -8,12 +8,18 @@ public class Day8Test {
 
   @Test
   public void example(){
-    assertEquals("message", 21, Day8.part1("30373\n" + "25512\n" + "65332\n" + "33549\n" + "35390"));
+    var matrix = StringMatrixParser.parse("30373\n" + "25512\n" + "65332\n" + "33549\n" + "35390", "\n", "");
+    var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
+    var transposedMatrix = StringMatrixParser.transposeGeneric(intMatrix, Integer.class);
+    assertEquals("message", 21, Day8.part1(intMatrix, transposedMatrix));
   }
 
   @Test
   public void example2(){
-    assertEquals("message", 8, Day8.part2("30373\n" + "25512\n" + "65332\n" + "33549\n" + "35390"));
+    var matrix = StringMatrixParser.parse("30373\n" + "25512\n" + "65332\n" + "33549\n" + "35390", "\n", "");
+    var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
+    var transposedMatrix = StringMatrixParser.transposeGeneric(intMatrix, Integer.class);
+    assertEquals("message", 8, Day8.part2(intMatrix, transposedMatrix));
   }
 
   @Test
