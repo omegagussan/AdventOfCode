@@ -120,10 +120,10 @@ public class Day8Test {
 
   @Test
   public void isSmallerEnd(){
-    assertEquals(Integer.valueOf("2"), Day8.isSmaller(new Integer[]{7, 1}, 8));
+    assertEquals(Integer.valueOf("2"), Day8.isSmallerUntil(new Integer[]{7, 1}, 8));
   }
   @Test
   public void isSmallerEquals(){
-    assertEquals(Integer.valueOf("2"), Day8.isSmaller(new Integer[]{1,2,1}, 2));
+    assertEquals(Integer.valueOf("2"), Day8.isSmallerUntil(new Integer[]{1,2,1}, 2));
   }
 }
