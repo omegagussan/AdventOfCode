@@ -16,17 +16,16 @@ public class Day8 {
         }
     }
 
-    public static Integer isDecreasing(Integer[] arr){
-        if (arr.length == 1){
+    public static Integer isSmaller(Integer[] arr, Integer elem){
+        if (arr.length == 0){
             return 0;
         }
-        for (int i=1; i < arr.length; i++){
-            boolean b = !(arr[i] < arr[i - 1]);
-            if (b){
-                return i;
+        for (int i=0; i < arr.length; i++){
+            if (!(elem > arr[i])){
+                return i + 1;
             }
         }
-        return arr.length -1;
+        return arr.length;
     }
 
     public static boolean customCheck(Integer[] arr, Integer comp){
@@ -79,22 +78,27 @@ public class Day8 {
         var topScore = 0;
         for (int i=0; i < intMatrix.length; i++){
             for (int j=0; j < intMatrix[0].length; j++){
-                var left = reverse(ArrayUtils.subarray(intMatrix[i], 0, j + 1));
-                var right = ArrayUtils.subarray(intMatrix[i], j , intMatrix.length + 1);
-                var up = reverse(ArrayUtils.subarray(transposedMatrix[j], 0, i +1 ));
-                var down = ArrayUtils.subarray(transposedMatrix[j], i , transposedMatrix.length + 1);
-
-                Integer ls = isDecreasing(left);
-                Integer rs = isDecreasing(right);
-                Integer us = isDecreasing(up);
-                Integer ds = isDecreasing(down);
-                var score = ls * rs * us * ds;
+                int score = getScore(intMatrix, transposedMatrix, i, j);
                 if (score > topScore){
                     topScore = score;
                 }
             }
         }
         return topScore;
+    }
+
+    public static int getScore(Integer[][] intMatrix, Integer[][] transposedMatrix, int i, int j) {
+        var left = reverse(ArrayUtils.subarray(intMatrix[i], 0, j));
+        var right = ArrayUtils.subarray(intMatrix[i], j+1, intMatrix.length + 1);
+        var up = reverse(ArrayUtils.subarray(transposedMatrix[j], 0, i));
+        var down = ArrayUtils.subarray(transposedMatrix[j], i+1, transposedMatrix.length + 1);
+
+        var val = intMatrix[i][j];
+        Integer ls = isSmaller(left, val);
+        Integer rs = isSmaller(right, val);
+        Integer us = isSmaller(up, val);
+        Integer ds = isSmaller(down, val);
+        return ls * rs * us * ds;
     }
 
     public static void main(String[] args){
