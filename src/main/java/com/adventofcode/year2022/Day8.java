@@ -2,19 +2,12 @@ package com.adventofcode.year2022;
 
 import com.adventofcode.utils.StringMatrixParser;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.NotNull;
 
 public class Day8 {
     public record Coord(Integer i, Integer j){
@@ -23,14 +16,17 @@ public class Day8 {
         }
     }
 
-    public static boolean isStriklyIncreasing(Integer[] arr){
+    public static Integer isDecreasing(Integer[] arr){
+        if (arr.length == 1){
+            return 0;
+        }
         for (int i=1; i < arr.length; i++){
-            boolean b = !(arr[i] > arr[i - 1]);
+            boolean b = !(arr[i] < arr[i - 1]);
             if (b){
-                return false;
+                return i;
             }
         }
-        return true;
+        return arr.length -1;
     }
 
     public static boolean customCheck(Integer[] arr, Integer comp){
@@ -57,19 +53,13 @@ public class Day8 {
         IntStream.range(0, matrix[0].length).mapToObj(value -> new Coord(0, value)).toList(),
         IntStream.range(0, matrix[0].length).mapToObj(value -> new Coord(matrix.length-1, value)).toList()
         ).stream().flatMap(coords -> coords.stream()).collect(Collectors.toSet());
-//            Arrays.stream(ArrayUtils.subarray(matrix[0], 0, matrix[0].length)).toList(),
-//            Arrays.stream(ArrayUtils.subarray(matrix[matrix.length-1], 0, matrix[0].length)).toList(),
-//            Arrays.stream(ArrayUtils.subarray(transposedMatrix[transposedMatrix.length-1], 0, transposedMatrix[0].length)).toList(),
-//            Arrays.stream(ArrayUtils.subarray(transposedMatrix[transposedMatrix.length-1], 0, transposedMatrix[0].length)).toList()
-//            ).stream().flatMap(list -> list..stream()).collect(Collectors.toSet());
         var visibleHashSet = new HashSet<>(visible);
-        System.out.println(visibleHashSet.size());
 
         for (int i=1; i < intMatrix.length -1; i++){
             for (int j=1; j < intMatrix[0].length -1; j++){
                 var elem= new Coord(i, j);
                 var los = ArrayUtils.subarray(intMatrix[i], 0, j);
-        var los2 = reverse(ArrayUtils.subarray(intMatrix[i], j +1 , intMatrix.length));
+                var los2 = reverse(ArrayUtils.subarray(intMatrix[i], j +1 , intMatrix.length));
                 var los3 = ArrayUtils.subarray(transposedMatrix[j], 0, i);
                 var los4 = reverse(ArrayUtils.subarray(transposedMatrix[j], i +1 , transposedMatrix.length));
 
@@ -82,7 +72,29 @@ public class Day8 {
     }
 
     public static int part2(String instructions) {
-        return 3;
+        var matrix = StringMatrixParser.parse(instructions, "\n", "");
+        var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
+        var transposedMatrix = StringMatrixParser.transposeGeneric(intMatrix, Integer.class);
+
+        var topScore = 0;
+        for (int i=0; i < intMatrix.length; i++){
+            for (int j=0; j < intMatrix[0].length; j++){
+                var left = reverse(ArrayUtils.subarray(intMatrix[i], 0, j + 1));
+                var right = ArrayUtils.subarray(intMatrix[i], j , intMatrix.length + 1);
+                var up = reverse(ArrayUtils.subarray(transposedMatrix[j], 0, i +1 ));
+                var down = ArrayUtils.subarray(transposedMatrix[j], i , transposedMatrix.length + 1);
+
+                Integer ls = isDecreasing(left);
+                Integer rs = isDecreasing(right);
+                Integer us = isDecreasing(up);
+                Integer ds = isDecreasing(down);
+                var score = ls * rs * us * ds;
+                if (score > topScore){
+                    topScore = score;
+                }
+            }
+        }
+        return topScore;
     }
 
     public static void main(String[] args){
