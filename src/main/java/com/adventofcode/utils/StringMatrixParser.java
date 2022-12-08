@@ -16,14 +16,14 @@ public class StringMatrixParser {
     return r.split(columnDelimiter);
   }
 
-  static <T> T[][] transposeGeneric(T[][] input, Class<T> clz){
+  public static <T> T[][] transposeGeneric(T[][] input, Class<T> clz){
     T[][] target = (T[][]) Array.newInstance(clz, input[0].length, input.length);
     IntStream.range(0, input[0].length)
         .forEach(i -> IntStream.range(0, input.length).forEach(j -> target[i][j] = input[j][i]));
     return target;
   }
 
-  static <T, R> R[][] applyGeneric(T[][] input, Class<R> clz, Function<T,R> fun){
+  public static <T, R> R[][] applyGeneric(T[][] input, Class<R> clz, Function<T,R> fun){
     R[][] target = (R[][]) Array.newInstance(clz, input.length, input[0].length);
     IntStream.range(0, input.length)
         .forEach(i -> IntStream.range(0, input[0].length).forEach(j -> target[i][j] = fun.apply(input[i][j])));

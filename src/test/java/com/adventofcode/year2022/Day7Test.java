@@ -45,7 +45,7 @@ public class Day7Test {
   @Test
   public void testTreeSize(){
     Map<String, Map<String, Integer>> tree = getTree(INSTRUCTIONS);
-    assertEquals("message", Integer.valueOf("48381165"), getSize(tree, tree.get("/")));
+    assertEquals("message", Integer.valueOf("48381165"), getSize(tree, tree.get("/"), 0));
   }
 
   @Test
