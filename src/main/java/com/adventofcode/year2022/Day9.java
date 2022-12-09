@@ -1,8 +1,11 @@
 package com.adventofcode.year2022;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 public class Day9 {
     public record Coord(Integer i, Integer j){
@@ -46,9 +49,34 @@ public class Day9 {
     public static final String ROW_DELIMITER = "\n";
 
     public static int part2(String instructions) {
-        return 3;
-    }
+        final List<Coord> knots = new ArrayList<>(Collections.nCopies(10, new Coord(0, 0)));
+        var taiVisited = new HashSet<Coord>();
 
+        Arrays.stream(instructions.split(ROW_DELIMITER)).forEach(a -> {
+            int value = Integer.parseInt(a.replaceAll("[^0-9]", ""));
+            for (int i = 0; i < value; i++){
+                for (int j = 1; j < 10; j++){
+                    knots.set(j, followHeadSpecial(knots.get(j-1), knots.get(j)));
+                }
+                taiVisited.add(knots.get(9));
+                switch (a.substring(0, 1)) {
+                    case "U" -> knots.set(0, knots.get(0).move(1, 0));
+                    case "D" -> knots.set(0, knots.get(0).move(-1, 0));
+                    case "R" -> knots.set(0, knots.get(0).move(0, 1));
+                    case "L" -> knots.set(0, knots.get(0).move(0, -1));
+                };
+                for (int j = 1; j < 10; j++){
+                    knots.set(j, followHeadSpecial(knots.get(j-1), knots.get(j)));
+                }
+                taiVisited.add(knots.get(9));
+            }
+        });
+        for (int j = 1; j < 10; j++){
+            knots.set(j, followHeadSpecial(knots.get(j-1), knots.get(j)));
+        }
+        taiVisited.add(knots.get(9));
+        return taiVisited.size();
+    }
 
     public static int part1(String instructions) {
         final Coord[] head = {new Coord(0, 0)};
@@ -82,6 +110,16 @@ public class Day9 {
             tail[0] = tail[0].move(delta);
             taiVisited.add(tail[0]);
         }
+    }
+
+    private static Coord followHeadSpecial(Coord head, Coord tail) {
+        var delta = Coord.compare(head, tail);
+        if (delta.magnitude() > 4){ //diagonal
+            tail = tail.moveDiagonal(delta);
+        } else if (!delta.isTouching()) {
+            tail = tail.move(delta);
+        }
+        return tail;
     }
 
     public static void main(String[] args){
