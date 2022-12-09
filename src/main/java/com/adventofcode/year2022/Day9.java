@@ -8,10 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 
 public class Day9 {
+    public static final String ROW_DELIMITER = "\n";
     public record Coord(Integer i, Integer j){
-        <T> T getValue(T[][] matrix){
-            return matrix[i][j];
-        }
 
         Coord move(Integer i, Integer j){
             return new Coord(this.i + i, this.j + j);
@@ -44,75 +42,31 @@ public class Day9 {
             return new Coord(a.i - b.i, a.j - b.j);
         }
 
-
     }
-    public static final String ROW_DELIMITER = "\n";
 
-    public static int part2(String instructions) {
-        final List<Coord> knots = new ArrayList<>(Collections.nCopies(10, new Coord(0, 0)));
-        var taiVisited = new HashSet<Coord>();
+    private static void oneStepForHead(List<Coord> knots, String instruction) {
+        switch (instruction.substring(0, 1)) {
+            case "U" -> knots.set(0, knots.get(0).move(1, 0));
+            case "D" -> knots.set(0, knots.get(0).move(-1, 0));
+            case "R" -> knots.set(0, knots.get(0).move(0, 1));
+            case "L" -> knots.set(0, knots.get(0).move(0, -1));
+        }
+        ;
+    }
 
-        Arrays.stream(instructions.split(ROW_DELIMITER)).forEach(a -> {
-            int value = Integer.parseInt(a.replaceAll("[^0-9]", ""));
-            for (int i = 0; i < value; i++){
-                for (int j = 1; j < 10; j++){
-                    knots.set(j, followHeadSpecial(knots.get(j-1), knots.get(j)));
-                }
-                taiVisited.add(knots.get(9));
-                switch (a.substring(0, 1)) {
-                    case "U" -> knots.set(0, knots.get(0).move(1, 0));
-                    case "D" -> knots.set(0, knots.get(0).move(-1, 0));
-                    case "R" -> knots.set(0, knots.get(0).move(0, 1));
-                    case "L" -> knots.set(0, knots.get(0).move(0, -1));
-                };
-                for (int j = 1; j < 10; j++){
-                    knots.set(j, followHeadSpecial(knots.get(j-1), knots.get(j)));
-                }
-                taiVisited.add(knots.get(9));
-            }
-        });
+    private static void updateCoordsAndTailVisited(List<Coord> knots, HashSet<Coord> taiVisited) {
         for (int j = 1; j < 10; j++){
-            knots.set(j, followHeadSpecial(knots.get(j-1), knots.get(j)));
+            knots.set(j, followHead(knots.get(j-1), knots.get(j)));
         }
         taiVisited.add(knots.get(9));
-        return taiVisited.size();
     }
 
-    public static int part1(String instructions) {
-        final Coord[] head = {new Coord(0, 0)};
-        final Coord[] tail = {new Coord(0, 0)};
-        var taiVisited = new HashSet<Coord>();
-
-        Arrays.stream(instructions.split(ROW_DELIMITER)).forEach(a -> {
-            int value = Integer.parseInt(a.replaceAll("[^0-9]", ""));
-            for (int i = 0; i < value; i++){
-                followHead(head, tail, taiVisited);
-                switch (a.substring(0, 1)) {
-                    case "U" -> head[0] = head[0].move(1, 0);
-                    case "D" -> head[0] = head[0].move(-1, 0);
-                    case "R" -> head[0] = head[0].move(0, 1);
-                    case "L" -> head[0] = head[0].move(0, -1);
-                };
-                followHead(head, tail, taiVisited);
-            }
-        });
-        followHead(head, tail, taiVisited);
-
-        return taiVisited.size();
+    private static void updateTailAndTailVisited(List<Coord> knots, HashSet<Coord> taiVisited) {
+        knots.set(1, followHead(knots.get(0), knots.get(1)));
+        taiVisited.add(knots.get(1));
     }
 
-    private static void followHead(Coord[] head, Coord[] tail, HashSet<Coord> taiVisited) {
-        var delta = Coord.compare(head[0], tail[0]);
-        if (delta.magnitude() > 4){ //diagonal
-            tail[0] = tail[0].moveDiagonal(delta);
-            taiVisited.add(tail[0]);
-        } else if (!delta.isTouching()) {
-            tail[0] = tail[0].move(delta);
-            taiVisited.add(tail[0]);
-        }
-    }
-
-    private static Coord followHeadSpecial(Coord head, Coord tail) {
+    private static Coord followHead(Coord head, Coord tail) {
         var delta = Coord.compare(head, tail);
         if (delta.magnitude() > 4){ //diagonal
             tail = tail.moveDiagonal(delta);
@@ -122,6 +76,39 @@ public class Day9 {
         return tail;
     }
 
+    public static int part1(String instructions) {
+        List<Coord> knots = new ArrayList<>(Collections.nCopies(2, new Coord(0, 0)));
+        var taiVisited = new HashSet<Coord>();
+
+        Arrays.stream(instructions.split(ROW_DELIMITER)).forEach(instruction -> {
+            int value = Integer.parseInt(instruction.replaceAll("[^0-9]", ""));
+            for (int i = 0; i < value; i++){
+                updateTailAndTailVisited(knots, taiVisited);
+                oneStepForHead(knots, instruction);
+                updateTailAndTailVisited(knots, taiVisited);
+            }
+        });
+        updateTailAndTailVisited(knots, taiVisited);
+
+        return taiVisited.size();
+    }
+
+    public static int part2(String instructions) {
+        final List<Coord> knots = new ArrayList<>(Collections.nCopies(10, new Coord(0, 0)));
+        var tailVisited = new HashSet<Coord>();
+
+        Arrays.stream(instructions.split(ROW_DELIMITER)).forEach(instruction -> {
+            int numberOfSteps = Integer.parseInt(instruction.replaceAll("[^0-9]", ""));
+            for (int i = 0; i < numberOfSteps; i++){
+                updateCoordsAndTailVisited(knots, tailVisited);
+                oneStepForHead(knots, instruction);
+                updateCoordsAndTailVisited(knots, tailVisited);
+            }
+        });
+        updateCoordsAndTailVisited(knots, tailVisited);
+        return tailVisited.size();
+    }
+
     public static void main(String[] args){
         try {
             InputStream i = Day9.class.getClassLoader().getResourceAsStream("2022/day9.txt");
@@ -129,7 +116,7 @@ public class Day9 {
             System.out.println("Part1: " + part1(instructions));
             System.out.println("Part2: " + part2(instructions));
         } catch (Exception e){
-            System.err.println("Something went poorly: " + e.getCause());
+            e.printStackTrace();
         }
     }
 }
