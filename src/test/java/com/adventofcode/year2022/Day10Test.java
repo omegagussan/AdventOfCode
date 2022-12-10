@@ -4,15 +4,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class Day10Test {
-//    @Test
-//    public void testExample(){
-//    assertEquals("simple case", 13, Day10.part1("noop\n" + "addx 3\n" + "addx -5"));
-//    }
-
     @Test
     public void testExample(){
     assertEquals(
-        "simple case",
         13140,
         Day10.part1(
             "addx 15\n"
@@ -166,7 +160,7 @@ public class Day10Test {
     @Test
     public void testExample2(){
         assertEquals(
-            "simple case",
+
             "##..##..##..##..##..##..##..##..##..##..\n"
                 + "###...###...###...###...###...###...###.\n"
                 + "####....####....####....####....####....\n"
@@ -321,6 +315,5 @@ public class Day10Test {
                     + "noop\n"
                     + "noop"));
     }
-
 }
 
