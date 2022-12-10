@@ -8,40 +8,41 @@ public class Day3Test {
   @Test
   public void testExample() {
     assertEquals(
-        "simple case",
         157,
         Day3.part1(
-            "vJrwpWtwJgWrhcsFMMfFFhFp\n"
-                + "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n"
-                + "PmmdzqPrVvPwwTWBwg\n"
-                + "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n"
-                + "ttgJtRGJQctTZtZT\n"
-                + "CrZsJsPPZsGzwwsLwLmpwMDw\n"));
+            """
+                vJrwpWtwJgWrhcsFMMfFFhFp
+                jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+                PmmdzqPrVvPwwTWBwg
+                wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+                ttgJtRGJQctTZtZT
+                CrZsJsPPZsGzwwsLwLmpwMDw
+                """));
   }
 
   @Test
   public void testPart2() {
     assertEquals(
-        "complex case",
         70,
         Day3.part2(
-            "vJrwpWtwJgWrhcsFMMfFFhFp\n"
-                + "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n"
-                + "PmmdzqPrVvPwwTWBwg\n"
-                + "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n"
-                + "ttgJtRGJQctTZtZT\n"
-                + "CrZsJsPPZsGzwwsLwLmpwMDw"));
+            """
+                vJrwpWtwJgWrhcsFMMfFFhFp
+                jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+                PmmdzqPrVvPwwTWBwg
+                wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+                ttgJtRGJQctTZtZT
+                CrZsJsPPZsGzwwsLwLmpwMDw"""));
   }
 
   @Test
   public void testPart2Big() {
     assertEquals(
-        "simple case",
         18,
         Day3.part2(
-            "vJrwpWtwJgWrhcsFMMfFFhFp\n"
-                + "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n"
-                + "PmmdzqPrVvPwwTWBwg"));
+            """
+                vJrwpWtwJgWrhcsFMMfFFhFp
+                jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+                PmmdzqPrVvPwwTWBwg"""));
   }
 
   @Test
