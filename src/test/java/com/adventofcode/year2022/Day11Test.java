@@ -3,6 +3,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.function.Function;
 import org.junit.Test;
 
 public class Day11Test {
@@ -43,6 +44,28 @@ public class Day11Test {
         10605,
         Day11.part1(
             testData));
+    }
+
+    @Test
+    public void testOperatorTestSquare() {
+        Function<Integer, Integer> squareFunction = Day11.parseOperation(
+            testData.split("\n\n")[2]);
+        assertEquals(Integer.valueOf("0"), squareFunction.apply(0));
+        assertEquals(Integer.valueOf("4"), squareFunction.apply(2));
+    }
+
+    @Test
+    public void testOperatorTestMultiplication() {
+    Function<Integer, Integer> squareFunction = Day11.parseOperation(testData.split("\n\n")[0]);
+        assertEquals(Integer.valueOf("0"), squareFunction.apply(0));
+        assertEquals(Integer.valueOf("19"), squareFunction.apply(1));
+    }
+
+    @Test
+    public void testOperatorTestAddition() {
+    Function<Integer, Integer> squareFunction = Day11.parseOperation(testData.split("\n\n")[1]);
+        assertEquals(Integer.valueOf("6"), squareFunction.apply(0));
+        assertEquals(Integer.valueOf("7"), squareFunction.apply(1));
     }
     @Test
     public void testExample2() throws IOException {
