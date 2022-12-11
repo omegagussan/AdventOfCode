@@ -47,7 +47,7 @@ public class Day2 {
             System.out.println("Part1: " + part1(instructions));
             System.out.println("Part2: " + part2(instructions));
         } catch (Exception e){
-            System.err.println("Something went poorly: " + e.getCause());
+            e.printStackTrace();
         }
     }
 }
