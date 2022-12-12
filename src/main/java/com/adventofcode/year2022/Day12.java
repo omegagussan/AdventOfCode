@@ -4,9 +4,7 @@ import com.adventofcode.utils.ArrayUtilz;
 import com.adventofcode.utils.Point;
 import com.adventofcode.utils.StringMatrixParser;
 import java.io.InputStream;
-import java.lang.annotation.IncompleteAnnotationException;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -36,9 +34,7 @@ public class Day12 {
 
                     int x = current.i() + i;
                     int y = current.j() + j;
-                    if (x == 2 && y == 5){
-                        System.out.println("here");
-                    }
+
                     var candidate = new Point(x, y);
                     boolean isWithinGrid = x >= 0 && x < grid.length && y >= 0 && y < grid[0].length;
                     if (!isWithinGrid){
@@ -70,8 +66,8 @@ public class Day12 {
             }
             return e.chars().findFirst().getAsInt() - 96;
         });
-        var start = ArrayUtilz.find(matrix, "S");
-        var end = ArrayUtilz.find(matrix, "E");
+        var start = ArrayUtilz.findFirst(matrix, "S");
+        var end = ArrayUtilz.findFirst(matrix, "E");
 
         var costs = BFS(start, costMatrix);
         System.out.println(costs);
@@ -79,7 +75,25 @@ public class Day12 {
     }
 
     public static int part2(String instructions) {
-        return 2;
+        var matrix = StringMatrixParser.parse(instructions, "\n", "");
+        var costMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, (e) -> {
+            if (Objects.equals(e, "S")){
+                e = "a";
+            } else if (Objects.equals(e, "E")){
+                e = "z";
+            }
+            return e.chars().findFirst().getAsInt() - 96;
+        });
+        var starts = ArrayUtilz.findAll(matrix, "a");
+        var end = ArrayUtilz.findFirst(matrix, "E");
+
+        var costs = new ArrayList<Integer>();
+        for (Point start :starts){
+            var cost = BFS(start, costMatrix);
+            costs.add(cost.getOrDefault(end, Integer.MAX_VALUE));
+        }
+
+        return costs.stream().mapToInt(Integer::intValue).min().getAsInt();
     }
 
     public static void main(String[] args){

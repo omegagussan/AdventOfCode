@@ -1,6 +1,8 @@
 package com.adventofcode.utils;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArrayUtilz {
   public static <T, E> T[] reverse(T[] arr, Class<E> clazz)
@@ -12,7 +14,7 @@ public class ArrayUtilz {
     return result;
   }
 
-  public static <T> Point find(T[][] arr, T elem)
+  public static <T> Point findFirst(T[][] arr, T elem)
   {
     for (int i = 0 ; i < arr.length; i++){
       for(int j = 0 ; j < arr[0].length ; j++) {
@@ -22,5 +24,18 @@ public class ArrayUtilz {
       }
     }
     return null;
+  }
+
+  public static <T> List<Point> findAll(T[][] arr, T elem)
+  {
+    var result = new ArrayList<Point>();
+    for (int i = 0 ; i < arr.length; i++){
+      for(int j = 0 ; j < arr[0].length ; j++) {
+        if (elem.equals(arr[i][j])) {
+          result.add(new Point(i, j));
+        }
+      }
+    }
+    return result;
   }
 }

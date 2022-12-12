@@ -15,5 +15,17 @@ public class Day12Test {
         acctuvwj
         abdefghi"""));
     }
+
+    @Test
+    public void testExample2(){
+        assertEquals(
+            29,
+            Day12.part2("""
+        Sabqponm
+        abcryxxl
+        accszExk
+        acctuvwj
+        abdefghi"""));
+    }
 }
 
