@@ -4,7 +4,6 @@ import com.adventofcode.utils.ArrayUtilz;
 import com.adventofcode.utils.Point;
 import com.adventofcode.utils.StringMatrixParser;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,6 +11,8 @@ import java.util.Objects;
 import java.util.Queue;
 
 public class Day12 {
+
+    public static final String ROW_DELIMITER = "\n";
 
     public static HashMap<Point, Integer> BFS(Point start, Integer[][] grid) {
         var distances = new HashMap<Point, Integer>();
@@ -22,25 +23,10 @@ public class Day12 {
 
         while (!queue.isEmpty()) {
             Point current = queue.poll();
-
-            // Check all the surrounding cells
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    if (i == 0 && j == 0) continue; // Skip the current cell
-                    if (i == 1 && j == 1 ) continue; // No diagonal leaps!
-                    if (i == -1 && j == -1 ) continue; // No diagonal leaps!
-                    if (i == 1 && j == -1 ) continue; // No diagonal leaps!
-                    if (i == -1 && j == 1 ) continue; // No diagonal leaps!
-
-                    int x = current.i() + i;
-                    int y = current.j() + j;
-
-                    var candidate = new Point(x, y);
-                    boolean isWithinGrid = x >= 0 && x < grid.length && y >= 0 && y < grid[0].length;
-                    if (!isWithinGrid){
-                        continue;
-                    }
-                    boolean isClimbable = grid[x][y] - grid[current.i()][current.j()] <= 1;
+            Point.getAdjacent(current).stream().filter(p -> Point.compare(p, current).magnitude() < 2)
+                .filter(c -> Point.isWithinGrid(grid, c))
+                .forEach(candidate -> {
+                    boolean isClimbable = grid[candidate.i()][candidate.j()] - grid[current.i()][current.j()] <= 1;
                     if (isClimbable){
                         var newCandidateValue = distances.get(current) + 1;
                         if (newCandidateValue < distances.getOrDefault(candidate, Integer.MAX_VALUE))
@@ -50,15 +36,13 @@ public class Day12 {
                             queue.add(candidate);
                         }
                     }
-                }
-            }
+            });
         }
         return distances;
     }
 
-    public static int part1(String instructions) {
-        var matrix = StringMatrixParser.parse(instructions, "\n", "");
-        var costMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, (e) -> {
+    private static Integer[][] parseCostMatrix(String[][] matrix) {
+        return StringMatrixParser.applyGeneric(matrix, Integer.class, (e) -> {
             if (Objects.equals(e, "S")){
                 e = "a";
             } else if (Objects.equals(e, "E")){
@@ -66,34 +50,27 @@ public class Day12 {
             }
             return e.chars().findFirst().getAsInt() - 96;
         });
+    }
+
+    public static int part1(String instructions) {
+        var matrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
+        Integer[][] constraintMatrix = parseCostMatrix(matrix);
         var start = ArrayUtilz.findFirst(matrix, "S");
         var end = ArrayUtilz.findFirst(matrix, "E");
 
-        var costs = BFS(start, costMatrix);
-        System.out.println(costs);
-        return costs.get(end);
+        return BFS(start, constraintMatrix).get(end);
     }
 
     public static int part2(String instructions) {
-        var matrix = StringMatrixParser.parse(instructions, "\n", "");
-        var costMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, (e) -> {
-            if (Objects.equals(e, "S")){
-                e = "a";
-            } else if (Objects.equals(e, "E")){
-                e = "z";
-            }
-            return e.chars().findFirst().getAsInt() - 96;
-        });
+        var matrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
+        Integer[][] constraintMatrix = parseCostMatrix(matrix);
         var starts = ArrayUtilz.findAll(matrix, "a");
         var end = ArrayUtilz.findFirst(matrix, "E");
 
-        var costs = new ArrayList<Integer>();
-        for (Point start :starts){
-            var cost = BFS(start, costMatrix);
-            costs.add(cost.getOrDefault(end, Integer.MAX_VALUE));
-        }
-
-        return costs.stream().mapToInt(Integer::intValue).min().getAsInt();
+        return starts.stream()
+            .map(s -> BFS(s, constraintMatrix).getOrDefault(end, Integer.MAX_VALUE))
+            .mapToInt(Integer::intValue)
+            .min().getAsInt();
     }
 
     public static void main(String[] args){
