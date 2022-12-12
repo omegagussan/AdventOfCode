@@ -11,4 +11,16 @@ public class ArrayUtilz {
     }
     return result;
   }
+
+  public static <T> Point find(T[][] arr, T elem)
+  {
+    for (int i = 0 ; i < arr.length; i++){
+      for(int j = 0 ; j < arr[0].length ; j++) {
+        if (elem.equals(arr[i][j])) {
+          return new Point(i, j);
+        }
+      }
+    }
+    return null;
+  }
 }

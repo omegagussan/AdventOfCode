@@ -6,10 +6,14 @@ import org.junit.Test;
 public class Day12Test {
     @Test
     public void testExample(){
-    assertEquals( 15, Day12.part1("""
-        A Y
-        B X
-        C Z"""));
+    assertEquals(
+        31,
+        Day12.part1("""
+        Sabqponm
+        abcryxxl
+        accszExk
+        acctuvwj
+        abdefghi"""));
     }
 }
 
