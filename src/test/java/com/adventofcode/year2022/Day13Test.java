@@ -11,42 +11,42 @@ public class Day13Test {
 
     @Test
     public void test1(){
-        assertEquals(true, Day13.isCorrect("[1,1,3,1,1]", "[1,1,5,1,1]", true));
+        assertEquals(2, Day13.isCorrect("[1,1,3,1,1]", "[1,1,5,1,1]"));
     }
 
     @Test
     public void test2(){
-        assertEquals(true, Day13.isCorrect("[[1],[2,3,4]]", "[[1],4]", true));
+        assertEquals(2, Day13.isCorrect("[[1],[2,3,4]]", "[[1],4]"));
     }
 
     @Test
     public void test3(){
-        assertEquals(false, Day13.isCorrect("[9]", "[[8,7,6]]", true));
+        assertEquals(-1, Day13.isCorrect("[9]", "[[8,7,6]]"));
     }
 
     @Test
     public void test4(){
-        assertEquals(true, Day13.isCorrect("[[4,4],4,4]", "[[4,4],4,4,4]", true));
+        assertEquals(1, Day13.isCorrect("[[4,4],4,4]", "[[4,4],4,4,4]"));
     }
 
     @Test
     public void test5(){
-        assertEquals(false, Day13.isCorrect("[7,7,7,7]", "[7,7,7]", true));
+        assertEquals(-1, Day13.isCorrect("[7,7,7,7]", "[7,7,7]"));
     }
 
     @Test
     public void test6(){
-        assertEquals(true, Day13.isCorrect("[]", "[3]", true));
+        assertEquals(1, Day13.isCorrect("[]", "[3]"));
     }
 
     @Test
     public void test7(){
-        assertEquals(false, Day13.isCorrect("[[[]]]", "[[]]", true));
+        assertEquals(-1, Day13.isCorrect("[[[]]]", "[[]]"));
     }
 
     @Test
     public void test8(){
-        assertEquals(false, Day13.isCorrect("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,0]]]],8,9]", true));
+        assertEquals(-7, Day13.isCorrect("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,0]]]],8,9]"));
     }
 
     @Test
