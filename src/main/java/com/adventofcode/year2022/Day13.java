@@ -8,23 +8,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.javatuples.Pair;
 
 public class Day13 {
 
   public static final String ROW_DELIMITER = "\n";
+  public static final String START_ARRAY = "[";
+  public static final String END_ARRAY = "]";
+  public static final String ARRAY_DELIMITER = ",";
 
   private static boolean isNumber(String s) {
-    s = s.trim();
-    return !s.startsWith("[") && !s.endsWith("]");
+    return !s.startsWith(START_ARRAY) && !s.endsWith(END_ARRAY);
   }
-  ;
 
   private static boolean isArray(String s) {
-    s = s.trim();
-    return s.startsWith("[") && s.endsWith("]");
+    return s.startsWith(START_ARRAY) && s.endsWith(END_ARRAY);
   }
-  ;
 
   public static int part1(String instructions) {
     List<Integer> noIntervention = new ArrayList<>();
@@ -64,47 +64,45 @@ public class Day13 {
 
       return x.orElseGet(() -> rightL.size() - leftL.size());
     }
-    throw new RuntimeException("what dis? " + left + " | " + right);
+    throw new RuntimeException("what is this fool!?");
   }
 
-  static List<String> parseStringArrays(String x) {
-    StringBuilder stringBuilder = new StringBuilder();
-    int isInside = 0;
+  static List<String> parseStringArrays(String s) {
+    var sb = new StringBuilder();
+    int depth = 0;
     ArrayList<String> result = new ArrayList<>();
-    for (String l : x.split("")) {
-      if ("[".equals(l)) {
-        isInside += 1;
-        stringBuilder.append(l);
-      } else if ("]".equals(l)) {
-        isInside = isInside - 1;
-        stringBuilder.append(l);
-      } else if (",".equals(l) && isInside == 0 && stringBuilder.length() > 0) {
-        result.add(stringBuilder.toString());
-        stringBuilder = new StringBuilder();
-      } else if (isInside > 0) {
-        stringBuilder.append(l);
-      } else if (!",".equals(l)) {
-        stringBuilder.append(l);
+    for (String l : s.split("")) {
+      if (START_ARRAY.equals(l)) {
+        depth += 1;
+        sb.append(l);
+      } else if (END_ARRAY.equals(l)) {
+        depth -= 1;
+        sb.append(l);
+      } else if (ARRAY_DELIMITER.equals(l) && depth == 0 && sb.length() > 0) {
+        result.add(sb.toString());
+        sb = new StringBuilder();
+      } else if (depth > 0) {
+        sb.append(l);
+      } else if (!ARRAY_DELIMITER.equals(l)) {
+        sb.append(l);
       }
     }
-    if (stringBuilder.length() > 0) {
-      result.add(stringBuilder.toString());
+    if (sb.length() > 0) {
+      result.add(sb.toString());
     }
     return result;
   }
 
   public static int part2(String instructions) {
-    var packets =
-        Arrays.stream(instructions.split(ROW_DELIMITER)).filter(s -> !s.isEmpty()).toList();
-    var arr = new ArrayList<>(packets);
-    String first = "[[2]]";
-    arr.add(first);
-    String second = "[[6]]";
-    arr.add(second);
-    arr.sort((a, b) -> (int) Math.signum(isCorrect(a, b)));
-    Collections.reverse(arr);
+    var packets = Arrays.stream(instructions.split(ROW_DELIMITER)).filter(s -> !s.isEmpty());
+    String hardCoded1 = "[[2]]";
+    String hardCoded2 = "[[6]]";
+    var arrayLizt =
+        new ArrayList<>(Stream.concat(packets, Stream.of(hardCoded1, hardCoded2)).toList());
+    arrayLizt.sort((a, b) -> (int) Math.signum(isCorrect(a, b)));
+    Collections.reverse(arrayLizt);
 
-    return (arr.indexOf(first) + 1) * (arr.indexOf(second) + 1);
+    return (arrayLizt.indexOf(hardCoded1) + 1) * (arrayLizt.indexOf(hardCoded2) + 1);
   }
 
   public static void main(String[] args) {

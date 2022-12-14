@@ -40,9 +40,9 @@ public class Day14 {
         var lineSegments = getLineSegments(instructions);
         Set<Point> constraints = getConstrains(lineSegments);
         var spawnPoint = new Point(500, 0);
-        var abyssPoint = lineSegments.stream().flatMap(p -> List.of(p.getValue0(), p.getValue1()).stream()).max(
+        var abyssPoint = lineSegments.stream().flatMap(p -> Stream.of(p.getValue0(), p.getValue1())).max(
             Comparator.comparingInt(Point::j)).get().j();
-        ArrayList<Point> sand = new ArrayList<>(List.of(spawnPoint));
+        List<Point> sand = List.of(spawnPoint);
         Set<Point> sandAtRest = new HashSet<>();
 
     while (sand.stream().noneMatch(point -> point.j() > abyssPoint)){
@@ -63,10 +63,8 @@ public class Day14 {
                         return possibleMove;
                     })
                 .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
-        sand = new ArrayList<>(newSand);
-        sand.add(spawnPoint);
+                .map(Optional::get);
+        sand = Stream.concat(newSand, Stream.of(spawnPoint)).toList();
     }
 
     return sandAtRest.size();
@@ -83,9 +81,9 @@ public class Day14 {
         var lineSegments = getLineSegments(instructions);
         Set<Point> constraints = getConstrains(lineSegments);
         var spawnPoint = new Point(500, 0);
-        var floorHeight = lineSegments.stream().flatMap(p -> List.of(p.getValue0(), p.getValue1()).stream()).max(
+        var floorHeight = lineSegments.stream().flatMap(p -> Stream.of(p.getValue0(), p.getValue1())).max(
             Comparator.comparingInt(Point::j)).get().j() + 2;
-        ArrayList<Point> sand = new ArrayList<>(List.of(spawnPoint));
+        List<Point> sand = List.of(spawnPoint);
         Set<Point> sandAtRest = new HashSet<>();
 
         while (!sandAtRest.contains(spawnPoint)){
@@ -103,10 +101,8 @@ public class Day14 {
                             return possibleMove;
                         })
                     .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
-            sand = new ArrayList<>(newSand);
-            sand.add(spawnPoint);
+                    .map(Optional::get);
+            sand = Stream.concat(newSand, Stream.of(spawnPoint)).toList();
         }
 
         return sandAtRest.size();
