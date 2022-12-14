@@ -48,7 +48,7 @@ public class Day14 {
     while (sand.stream().noneMatch(point -> point.j() > abyssPoint)){
         var newSand =
             sand.stream()
-                .map(
+                .flatMap(
                     current -> {
                         var downCandidate = current.move(0, 1);
                         var downLeftCandidate = current.move(-1, 1);
@@ -60,10 +60,8 @@ public class Day14 {
                         if (possibleMove.isEmpty()) {
                             sandAtRest.add(current);
                         }
-                        return possibleMove;
-                    })
-                .filter(Optional::isPresent)
-                .map(Optional::get);
+                        return possibleMove.stream();
+                    });
         sand = Stream.concat(newSand, Stream.of(spawnPoint)).toList();
     }
 
@@ -89,7 +87,7 @@ public class Day14 {
         while (!sandAtRest.contains(spawnPoint)){
             var newSand =
                 sand.stream()
-                    .map(
+                    .flatMap(
                         current -> {
                             Optional<Point> possibleMove =
                                 Point.getAdjacent(current).stream().filter(point -> point.j() > current.j()) //OBS! Order matters
@@ -98,10 +96,8 @@ public class Day14 {
                             if (possibleMove.isEmpty()) {
                                 sandAtRest.add(current);
                             }
-                            return possibleMove;
-                        })
-                    .filter(Optional::isPresent)
-                    .map(Optional::get);
+                            return possibleMove.stream(); //WOW ANDERS!
+                        });
             sand = Stream.concat(newSand, Stream.of(spawnPoint)).toList();
         }
 
