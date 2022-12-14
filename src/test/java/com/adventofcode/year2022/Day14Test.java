@@ -20,6 +20,17 @@ public class Day14Test {
     }
 
     @Test
+    public void testExample2(){
+        assertEquals(
+            93,
+            Day14.part2(
+                """
+			498,4 -> 498,6 -> 496,6
+			503,4 -> 502,4 -> 502,9 -> 494,9>
+			"""));
+    }
+
+    @Test
     public void testGetCons(){
         Set<Point> expected = Day14.getConstrains(Day14.getLineSegments(
             """

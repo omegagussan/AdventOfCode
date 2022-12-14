@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +54,7 @@ public class Day14 {
                         var downLeftCandidate = current.move(-1, 1);
                         var downRightCandidate = current.move(1, 1);
                         Optional<Point> possibleMove =
-                            List.of(downCandidate, downLeftCandidate, downRightCandidate).stream()
+                            Stream.of(downCandidate, downLeftCandidate, downRightCandidate) //OBS! Order matters
                                 .filter(c -> !constraints.contains(c) && !sandAtRest.contains(c))
                                 .findFirst();
                         if (possibleMove.isEmpty()) {
@@ -73,14 +74,42 @@ public class Day14 {
 
     @NotNull
     static Set<Point> getConstrains(List<Pair<Point, Point>> lineSegments) {
-        Set<Point> constraints = lineSegments.stream()
+        return lineSegments.stream()
             .flatMap(pair -> Point.compare(pair.getValue0(), pair.getValue1()).consistsOf(pair.getValue1()).stream())
             .collect(Collectors.toSet());
-        return constraints;
     }
 
     public static int part2(String instructions) {
-      return 2;
+        var lineSegments = getLineSegments(instructions);
+        Set<Point> constraints = getConstrains(lineSegments);
+        var spawnPoint = new Point(500, 0);
+        var floorHeight = lineSegments.stream().flatMap(p -> List.of(p.getValue0(), p.getValue1()).stream()).max(
+            Comparator.comparingInt(Point::j)).get().j() + 2;
+        ArrayList<Point> sand = new ArrayList<>(List.of(spawnPoint));
+        Set<Point> sandAtRest = new HashSet<>();
+
+        while (!sandAtRest.contains(spawnPoint)){
+            var newSand =
+                sand.stream()
+                    .map(
+                        current -> {
+                            Optional<Point> possibleMove =
+                                Point.getAdjacent(current).stream().filter(point -> point.j() > current.j()) //OBS! Order matters
+                                    .filter(c -> !constraints.contains(c) && !sandAtRest.contains(c) && c.j() != floorHeight)
+                                    .findFirst();
+                            if (possibleMove.isEmpty()) {
+                                sandAtRest.add(current);
+                            }
+                            return possibleMove;
+                        })
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
+            sand = new ArrayList<>(newSand);
+            sand.add(spawnPoint);
+        }
+
+        return sandAtRest.size();
     }
 
     public static void main(String[] args){
