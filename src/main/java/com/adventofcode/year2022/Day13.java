@@ -3,6 +3,8 @@ package com.adventofcode.year2022;
 import com.google.common.collect.Streams;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -87,7 +89,16 @@ public class Day13 {
     }
 
     public static int part2(String instructions) {
-        return 3;
+        var packets = Arrays.stream(instructions.split(ROW_DELIMITER)).filter(s -> !s.isEmpty()).toList();
+        var arr = new ArrayList<>(packets);
+        String first = "[[2]]";
+        arr.add(first);
+        String second = "[[6]]";
+        arr.add(second);
+        arr.sort((a, b) -> (int) Math.signum(isCorrect(a,b)));
+        Collections.reverse(arr);
+
+        return (arr.indexOf(first) + 1) * (arr.indexOf(second) + 1);
     }
 
     public static void main(String[] args){
