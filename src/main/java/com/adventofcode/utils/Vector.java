@@ -6,7 +6,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 public record Vector(Integer i, Integer j){
   public int magnitude(){
-    return i*i + j*j;
+    return Math.addExact(Math.multiplyExact(i,i), Math.multiplyExact(j,j));
   }
 
   public List<Point> consistsOf(Point start){
