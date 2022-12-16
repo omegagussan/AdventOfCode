@@ -12,10 +12,6 @@ public record Point(Integer i, Integer j){
     return new Vector(a.i() - b.i(), a.j() - b.j());
   }
 
-  public static LongVector compareBig(Point a, Point b){
-    return new LongVector((long) (a.i() - b.i()), (long) (a.j() - b.j()));
-  }
-
   public Point move(int x, int y){
     return new Point(this.i() + x, this.j() + y);
   }

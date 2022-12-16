@@ -3,6 +3,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.adventofcode.utils.Point;
+import java.util.List;
 import java.util.Set;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -28,8 +29,8 @@ public class Day15Test {
                 Sensor at x=20, y=1: closest beacon is at x=15, y=3
                 """).toList();
         assertEquals(14, expected.size());
-        assertTrue(expected.contains(new Pair<>(new Point(2,18), new Point(-2,15))));
-        assertTrue(expected.contains(new Pair<>(new Point(20,1), new Point(15,3))));
+        assertTrue(expected.contains(List.of(2,18, -2,15)));
+        assertTrue(expected.contains(List.of(20,1,15,3)));
     }
 
     @Test
@@ -52,38 +53,6 @@ public class Day15Test {
                 Sensor at x=20, y=1: closest beacon is at x=15, y=3
                 """, 10);
         assertEquals(26, expected);
-    }
-
-    @Test
-    public void testExampleX(){
-        var expected = Day15.part1(
-            """
-                Sensor at x=0, y=20: closest beacon is at x=0, y=21
-                Sensor at x=10, y=0: closest beacon is at x=10, y=-1
-
-                """, 10);
-        assertEquals(0, expected);
-    }
-    @Test
-    public void testExampleOneBeaconOnLine(){
-        var expected = Day15.part1(
-            """
-                Sensor at x=0, y=10: closest beacon is at x=5, y=10
-                Sensor at x=10, y=10: closest beacon is at x=5, y=10
-
-                """, 10);
-        assertEquals(10, expected);
-    }
-
-    @Test
-    public void testExampleTwoBeaconOneFreeOnline(){
-        var expected = Day15.part1(
-            """
-                Sensor at x=0, y=10: closest beacon is at x=3, y=9
-                Sensor at x=10, y=10: closest beacon is at x=7, y=11
-
-                """, 10);
-        assertEquals(1, expected);
     }
 }
 
