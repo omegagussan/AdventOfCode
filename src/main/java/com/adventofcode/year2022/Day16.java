@@ -65,8 +65,7 @@ public class Day16 {
       String currentElephant,
       Set<String> openValves,
       Integer playerTime,
-      Integer elephantTime
-  ) {
+      Integer elephantTime) {
     if (playerTime < 1 && elephantTime < 1) {
       return new Triplet<>(0, Collections.emptyList(), Collections.emptyList());
     }
@@ -75,21 +74,33 @@ public class Day16 {
     int targetTime = playerGoes ? playerTime : elephantTime;
     int valveOpen = parsedInput.get(target).value() * (targetTime - 1);
 
-    Optional<Triplet<Integer, List<String>, List<String>>> candidate = getTripletCandidates(
-        currentPlayer,
-        currentElephant,
-        openValves,
-        playerTime,
-        elephantTime,
-        playerGoes,
-        target,
-        targetTime).max(Comparator.comparingInt(Triplet::getValue0));
-    var v = candidate.orElseGet(() -> playerGoes ? bestMoveWithAnElephant(STARTING_VALVE, currentElephant, openValves, 0, elephantTime): bestMoveWithAnElephant(currentPlayer,
-        STARTING_VALVE, openValves, playerTime, 0));
+    Optional<Triplet<Integer, List<String>, List<String>>> candidate =
+        getTripletCandidates(
+                currentPlayer,
+                currentElephant,
+                openValves,
+                playerTime,
+                elephantTime,
+                playerGoes,
+                target,
+                targetTime)
+            .max(Comparator.comparingInt(Triplet::getValue0));
+    var v =
+        candidate.orElseGet(
+            () ->
+                playerGoes
+                    ? bestMoveWithAnElephant(
+                        STARTING_VALVE, currentElephant, openValves, 0, elephantTime)
+                    : bestMoveWithAnElephant(
+                        currentPlayer, STARTING_VALVE, openValves, playerTime, 0));
     return new Triplet<>(
-            valveOpen + v.getValue0(),
-            playerGoes ? Streams.concat(v.getValue1().stream(), Stream.of(currentPlayer)).toList() : v.getValue1(),
-            !playerGoes ? Streams.concat(v.getValue2().stream(), Stream.of(currentElephant)).toList() : v.getValue2());
+        valveOpen + v.getValue0(),
+        playerGoes
+            ? Streams.concat(v.getValue1().stream(), Stream.of(currentPlayer)).toList()
+            : v.getValue1(),
+        !playerGoes
+            ? Streams.concat(v.getValue2().stream(), Stream.of(currentElephant)).toList()
+            : v.getValue2());
   }
 
   @NotNull
@@ -101,29 +112,29 @@ public class Day16 {
       Integer elephantTime,
       boolean playerGoes,
       String target,
-      int targetTime
-  ) {
+      int targetTime) {
     return distances.get(target).entrySet().stream()
-          .filter(entry -> !openValves.contains(entry.getKey()))
-          .filter(entry -> targetTime - entry.getValue() - 1 > 0)
-          .map(
-              entry -> {
-                var targetOpenedValves =
-                    Streams.concat(openValves.stream(), Stream.of(entry.getKey()))
-                        .collect(Collectors.toSet());
-                return playerGoes ? bestMoveWithAnElephant(
-                    entry.getKey(),
-                    currentElephant,
-                    targetOpenedValves,
-                    playerTime - entry.getValue() - 1,
-                    elephantTime) :
-                      bestMoveWithAnElephant(
-                          currentPlayer,
-                          entry.getKey(),
-                          targetOpenedValves,
-                          playerTime,
-                    elephantTime - entry.getValue() - 1);
-              });
+        .filter(entry -> !openValves.contains(entry.getKey()))
+        .filter(entry -> targetTime - entry.getValue() - 1 > 0)
+        .map(
+            entry -> {
+              var targetOpenedValves =
+                  Streams.concat(openValves.stream(), Stream.of(entry.getKey()))
+                      .collect(Collectors.toSet());
+              return playerGoes
+                  ? bestMoveWithAnElephant(
+                      entry.getKey(),
+                      currentElephant,
+                      targetOpenedValves,
+                      playerTime - entry.getValue() - 1,
+                      elephantTime)
+                  : bestMoveWithAnElephant(
+                      currentPlayer,
+                      entry.getKey(),
+                      targetOpenedValves,
+                      playerTime,
+                      elephantTime - entry.getValue() - 1);
+            });
   }
 
   @NotNull
@@ -144,7 +155,9 @@ public class Day16 {
 
   static int distanceFromAB(
       String a, String b, Map<String, Map<String, Integer>> distanceBuilder, Set<String> visited) {
-    if (a.equals(b)) {return 0;}
+    if (a.equals(b)) {
+      return 0;
+    }
     if (distanceBuilder.get(b).containsKey(a)) {
       return distanceBuilder.get(b).get(a);
     }
@@ -208,18 +221,30 @@ public class Day16 {
   public static int part2(String instruction) {
     parsedInput = parseInput(instruction).collect(Collectors.toMap(t -> t.id, t -> t));
     distances = getDistances();
-    AtomicReference<Triplet<Integer, List<String>, List<String>>> best = new AtomicReference<>(
-        new Triplet<>(0, List.of(), List.of()));
+    AtomicReference<Triplet<Integer, List<String>, List<String>>> best =
+        new AtomicReference<>(new Triplet<>(0, List.of(), List.of()));
 
     Map<String, Integer> startDistanceMap = distances.get(STARTING_VALVE);
-    startDistanceMap.keySet().forEach(player -> {
-      startDistanceMap.keySet().stream().filter(k -> !k.equals(player)).forEach(elephant -> {
-        var triplet = bestMoveWithAnElephant(player, elephant, Set.of(player, elephant), P2_TIME_LIMIT - startDistanceMap.get(player),P2_TIME_LIMIT - startDistanceMap.get(elephant));
-        if (triplet.getValue0() > best.get().getValue0()){
-          best.set(triplet);
-        }
-      });
-    });
+    startDistanceMap
+        .keySet()
+        .forEach(
+            player -> {
+              startDistanceMap.keySet().stream()
+                  .filter(k -> !k.equals(player))
+                  .forEach(
+                      elephant -> {
+                        var triplet =
+                            bestMoveWithAnElephant(
+                                player,
+                                elephant,
+                                Set.of(player, elephant),
+                                P2_TIME_LIMIT - startDistanceMap.get(player),
+                                P2_TIME_LIMIT - startDistanceMap.get(elephant));
+                        if (triplet.getValue0() > best.get().getValue0()) {
+                          best.set(triplet);
+                        }
+                      });
+            });
 
     return best.get().getValue0();
   }
@@ -229,9 +254,12 @@ public class Day16 {
     distances = getDistances();
     return distances.get(STARTING_VALVE).keySet().stream()
         .filter(integer -> parsedInput.get(integer).value > 0)
-        .map(integer -> bestMove(integer, Set.of(integer), 29 - distances.get(STARTING_VALVE).get(integer)))
+        .map(
+            integer ->
+                bestMove(integer, Set.of(integer), 29 - distances.get(STARTING_VALVE).get(integer)))
         .max(Comparator.comparingInt(Pair::getValue0))
-        .get().getValue0();
+        .get()
+        .getValue0();
   }
 
   public static void main(String[] args) {
