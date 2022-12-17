@@ -1,5 +1,6 @@
 package com.adventofcode.year2022;
 
+import com.adventofcode.utils.LongPoint;
 import com.adventofcode.utils.Point;
 import com.adventofcode.utils.StringMatrixParser;
 import com.adventofcode.utils.Vector;
@@ -7,6 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
 
 public class Day17 {
@@ -60,7 +63,8 @@ public class Day17 {
                       .filter(Objects::nonNull)
                       .collect(Collectors.toSet()))
           .toList();
-  static Map<Integer, Integer> SHAPE_OFFSET = Map.of(0, -3, 1, 0, 2, 0, 3, 3, 4, 0);
+    public static final long ELEPHANT_ARE_IMPRESSED_LIMIT = 1000000000000L;
+    static Map<Integer, Integer> SHAPE_OFFSET = Map.of(0, -3, 1, 0, 2, 0, 3, 3, 4, 0);
 
   public static List<Set<Point>> PROCESSED_SHAPES =
       IntStream.rangeClosed(0, SHAPES.size() - 1)
@@ -83,86 +87,142 @@ public class Day17 {
     return (candidate.size() == rock.size() && isCollisionFree) ? candidate : rock;
   }
 
-  public static void draw(Set<Point> current, Set<Point> constraints, String label) {
-    var highestPoint = current.stream().map(Point::j).mapToInt(Integer::intValue).max().orElse(-1);
-    var highestPoint2 =
-        constraints.stream().map(Point::j).mapToInt(Integer::intValue).max().orElse(-1);
-    var range =
-        new ArrayList<>(
-            IntStream.rangeClosed(0, Math.max(highestPoint, highestPoint2))
-                .boxed()
-                .toList());
-    System.out.println(label);
-    Collections.reverse(range);
-    range.forEach(
-        j -> {
-          var sb = new StringBuilder();
-          IntStream.rangeClosed(0, TUNNEL_WIDTH)
-              .forEach(
-                  i -> {
-                    var c = new Point(i, j);
-                    if (current.contains(c)) {
-                      sb.append("@");
-                    } else if (constraints.contains(c)) {
-                      sb.append("#");
-                    } else {
-                      sb.append(".");
-                    }
-                  });
-          System.out.println(sb.toString());
-        });
-    System.out.println("");
-    System.out.println("");
-    System.out.println("");
-  }
+    public static Set<LongPoint> moveIfSpaceLong(Set<LongPoint> rock, Vector movement, Set<LongPoint> occupied) {
+        var candidate =
+            rock.stream()
+                .map(point -> point.moveArbitrary(movement))
+                .filter(point -> 0 <= point.i() && point.i() <= TUNNEL_WIDTH)
+                .filter(point -> 0 <= point.j())
+                .collect(Collectors.toSet());
 
-  public static int part1(String instructions) {
-    var instructionsList = Arrays.stream(instructions.split("")).toList();
-    var tower = new HashSet<Point>();
-    AtomicInteger wind = new AtomicInteger();
-    IntStream.rangeClosed(0, 2021)
-        .boxed()
-        .forEach(
-            blockNumber -> {
-              int shapeIdx = blockNumber % SHAPES.size();
-              Set<Point> shape =
-                  getShape(
-                      tower.stream().map(Point::j).mapToInt(Integer::intValue).max().orElse(-1),
-                      shapeIdx);
-              while (true) {
-                int movementX =
-                    ">".equals(
-                                instructionsList.get(
-                                    wind.getAndIncrement() % instructionsList.size()))
-                        ? 1
-                        : -1;
-                var horizontal = moveIfSpace(shape, new Vector(movementX, 0), tower);
-                var vertical = moveIfSpace(horizontal, new Vector(0, -1), tower);
+        var isCollisionFree = candidate.stream().noneMatch(occupied::contains);
+        return (candidate.size() == rock.size() && isCollisionFree) ? candidate : rock;
+    }
 
-                if (horizontal == vertical) {
-                  shape = horizontal;
-                  break;
-                }
-                shape = vertical;
-              }
-              tower.addAll(shape);
-            });
-    return tower.stream().map(Point::j).mapToInt(Integer::intValue).max().getAsInt() + 1; //zero indexed
-  }
+//  public static void draw(Set<Point> current, Set<Point> constraints, Integer highestPoint, String label) {
+//    System.out.println(label);
+//    for (int j = highestPoint; j > -1; j--){
+//        var sb = new StringBuilder();
+//        for (int i = 0; i <= TUNNEL_WIDTH; i++){
+//            var c = new Point(i, j);
+//            if (current.contains(c)) {
+//                sb.append("@");
+//            } else if (constraints.contains(c)) {
+//                sb.append("#");
+//            } else {
+//                sb.append(".");
+//            }
+//        };
+//        System.out.println(sb);
+//    }
+//    System.out.println("");
+//    System.out.println("");
+//    System.out.println("");
+//  }
 
   @NotNull
   static Set<Point> getShape(int towerHighestPoint, int shapeIdx) {
     var shape =
         new ArrayList<>(PROCESSED_SHAPES.get(shapeIdx))
             .stream()
-                .map(point -> point.move(2, +towerHighestPoint + 4))
+                .map(point -> point.move(2, towerHighestPoint + 4))
                 .collect(Collectors.toSet());
     return shape;
   }
 
-  public static int part2(String instructions) {
-    return 2;
-  }
+    @NotNull
+    static Set<LongPoint> getShapeLong(Long towerHighestPoint, int shapeIdx) {
+        var shape =
+            new ArrayList<>(PROCESSED_SHAPES.get(shapeIdx))
+                .stream()
+                .map(intPoint -> new LongPoint(Long.valueOf(intPoint.i()), Long.valueOf(intPoint.j())))
+                .map(point -> point.move(2L, +towerHighestPoint + 4))
+                .collect(Collectors.toSet());
+        return shape;
+    }
+
+    public static int part1(String instructions) {
+        var instructionsList = Arrays.stream(instructions.split("")).toList();
+        var tower = new HashSet<Point>();
+        int wind = 0;
+        int height = -1;
+        int count = 0;
+        while(count < 2022){
+            Set<Point> shape =
+                getShape(
+                    height,
+                    count % SHAPES.size());
+            while (true) {
+                int movementX = ">".equals(instructionsList.get(wind)) ? 1 : -1;
+                wind = wind +1;
+                wind = wind % instructionsList.size();
+                var horizontal = moveIfSpace(shape, new Vector(movementX, 0), tower);
+                var vertical = moveIfSpace(horizontal, new Vector(0, -1), tower);
+
+                if (horizontal == vertical) {
+                    shape = horizontal;
+                    break;
+                }
+                shape = vertical;
+            }
+            int highestPointInShape = shape.stream().map(Point::j).mapToInt(Integer::intValue).max().getAsInt();
+            height = Math.max(height, highestPointInShape);
+            tower.addAll(shape);
+            count ++;
+        }
+        return height + 1;
+    }
+
+    public static long part2(String instructions) {
+        var instructionsList = Arrays.stream(instructions.split("")).toList();
+        var tower = new HashSet<LongPoint>();
+        var cache = new HashMap<String, Pair<Long, Long>>();
+
+        int windex = 0; //wind index
+        long count = 0;
+        long highest = -1;
+        while (count < ELEPHANT_ARE_IMPRESSED_LIMIT){
+            assert count != 2022 || 3068 == highest + 1;
+            int shapeIdx = (int) (count % SHAPES.size());
+            Set<LongPoint> shape = getShapeLong(highest, shapeIdx);
+
+            var shapeWindKey = windex + "/" + shapeIdx;
+            if (cache.containsKey(shapeWindKey)){
+                var period = count - cache.get(shapeWindKey).getValue0(); //count
+                if (count % period == ELEPHANT_ARE_IMPRESSED_LIMIT % period){
+                    Long heightBefore = cache.get(shapeWindKey).getValue1();
+                    return heightBefore + Math.multiplyExact((highest +1) - heightBefore, Math.floorDiv((ELEPHANT_ARE_IMPRESSED_LIMIT-count), period) + 1);
+                }
+            } else {
+                cache.put(shapeWindKey, new Pair<>(count, highest + 1));
+            }
+
+
+            while (true) {
+                int movementX =
+                    ">".equals(
+                        instructionsList.get(
+                            windex))
+                        ? 1
+                        : -1;
+                windex += 1;
+                windex = windex % instructionsList.size();
+                var horizontal = moveIfSpaceLong(shape, new Vector(movementX, 0), tower);
+                var vertical = moveIfSpaceLong(horizontal, new Vector(0, -1), tower);
+
+                if (horizontal == vertical) {
+                    shape = horizontal;
+                    break;
+                }
+                shape = vertical;
+            }
+            var highestPointInShape = shape.stream().map(LongPoint::j).mapToLong(Long::longValue).max().getAsLong();
+            highest = Math.max(highest, highestPointInShape);
+            tower.addAll(shape);
+            count += 1;
+        }
+        throw new IllegalStateException("This is not good!");
+    }
 
   public static void main(String[] args) {
     try {

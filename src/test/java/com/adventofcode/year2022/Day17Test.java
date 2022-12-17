@@ -43,5 +43,10 @@ public class Day17Test {
     public void testPart1(){
         assertEquals(3068, Day17.part1(TEST_INSTRUCTION));
     }
+
+    @Test
+    public void testPart2(){
+        assertEquals(1514285714288L, Day17.part2(TEST_INSTRUCTION));
+    }
 }
 
