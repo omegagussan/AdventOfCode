@@ -93,9 +93,9 @@ public class Day16Test {
     public void part1BestMove(){
         Day16.parsedInput = Day16.parseInput(TEST_INSTRUCTION).collect(
             Collectors.toMap(ValveNode::id, t -> t));
-        var distances = Day16.getDistances();
+        Day16.distances = Day16.getDistances();
 
-        var expected = Day16.bestMove("AA", Set.of(), 1, distances);
+        var expected = Day16.bestMove("AA", Set.of(), 1);
         assertEquals(new Pair<>(0, List.of("AA")), expected);
     }
 
@@ -103,9 +103,9 @@ public class Day16Test {
     public void part1BestMove2(){
         Day16.parsedInput = Day16.parseInput(TEST_INSTRUCTION).collect(
             Collectors.toMap(ValveNode::id, t -> t));
-        var distances = Day16.getDistances();
+        Day16.distances = Day16.getDistances();
 
-        var expected = Day16.bestMove("AA", Set.of(), 3, distances);
+        var expected = Day16.bestMove("AA", Set.of(), 3);
         assertEquals(new Pair<>(20, List.of("DD", "AA")), expected);
     }
 
@@ -113,9 +113,10 @@ public class Day16Test {
     public void part1BestMove3(){
         Day16.parsedInput = Day16.parseInput(TEST_INSTRUCTION).collect(
             Collectors.toMap(ValveNode::id, t -> t));
-        var distances = Day16.getDistances();
+        Day16.distances = Day16.getDistances();
 
-        var expected = Day16.bestMove("EE", Set.of(), 2, distances);
+
+        var expected = Day16.bestMove("EE", Set.of(), 2);
         assertEquals(new Pair<>(6, List.of("EE")), expected);
     }
 
@@ -124,8 +125,10 @@ public class Day16Test {
         Day16.parsedInput = Day16.parseInput(TEST_INSTRUCTION).collect(
             Collectors.toMap(ValveNode::id, t -> t));
         var distances = Day16.getDistances();
+        Day16.distances = Day16.getDistances();
 
-        var expected = Day16.bestMove("EE", Set.of(), 3, distances);
+
+        var expected = Day16.bestMove("EE", Set.of(), 3);
         assertEquals(new Pair<>(29, List.of("DD", "EE")), expected);
     }
 }
