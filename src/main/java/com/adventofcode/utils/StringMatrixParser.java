@@ -2,8 +2,10 @@ package com.adventofcode.utils;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+import org.javatuples.Pair;
 
 public class StringMatrixParser {
   public static String[][] parse(String arg, String rowDelimiter, String columnDelimiter) {
@@ -27,6 +29,13 @@ public class StringMatrixParser {
     R[][] target = (R[][]) Array.newInstance(clz, input.length, input[0].length);
     IntStream.range(0, input.length)
         .forEach(i -> IntStream.range(0, input[0].length).forEach(j -> target[i][j] = fun.apply(input[i][j])));
+    return target;
+  }
+
+  public static <T, R> R[][] applyGenericPoseAware(T[][] input, Class<R> clz, BiFunction<T, Pair<Integer, Integer>, R> fun){
+    R[][] target = (R[][]) Array.newInstance(clz, input.length, input[0].length);
+    IntStream.range(0, input.length)
+        .forEach(i -> IntStream.range(0, input[0].length).forEach(j -> target[i][j] = fun.apply(input[i][j], new Pair<>(i, j))));
     return target;
   }
 

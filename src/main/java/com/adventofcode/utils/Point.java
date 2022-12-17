@@ -16,11 +16,15 @@ public record Point(Integer i, Integer j){
     return new Point(this.i() + x, this.j() + y);
   }
 
-  public Point move(Vector delta){
+  public Point oneStepInLargestDirection(Vector delta){
     if (Math.abs(delta.i()) > Math.abs(delta.j())){
       return new Point(this.i() + (int) Math.signum(delta.i()), this.j());
     }
     return new Point(this.i(), this.j() + (int) Math.signum(delta.j()));
+  }
+
+  public Point moveArbitrary(Vector delta){
+    return new Point(this.i() + delta.i(), this.j() + delta.j());
   }
 
   public static List<Point> getAdjacent(Point p){

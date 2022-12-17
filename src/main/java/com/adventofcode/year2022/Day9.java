@@ -39,7 +39,7 @@ public class Day9 {
             tail = new Point(tail.i() + (int) Math.signum(delta.i()),
                 tail.j() + (int) Math.signum(delta.j()));
         } else if (!isTouching(delta)) {
-            tail = tail.move(delta);
+            tail = tail.oneStepInLargestDirection(delta);
         }
         return tail;
     }
