@@ -7,14 +7,12 @@ import com.adventofcode.utils.Vector;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.javatuples.Pair;
@@ -75,19 +73,7 @@ public class Day17 {
                       .collect(Collectors.toSet()))
           .toList();
 
-  public static Set<Point> moveIfSpace(Set<Point> rock, Vector movement, Set<Point> occupied) {
-    var candidate =
-        rock.stream()
-            .map(point -> point.moveArbitrary(movement))
-            .filter(point -> 0 <= point.i() && point.i() <= TUNNEL_WIDTH)
-            .filter(point -> 0 <= point.j())
-            .collect(Collectors.toSet());
-
-    var isCollisionFree = candidate.stream().noneMatch(occupied::contains);
-    return (candidate.size() == rock.size() && isCollisionFree) ? candidate : rock;
-  }
-
-    public static Set<LongPoint> moveIfSpaceLong(Set<LongPoint> rock, Vector movement, Set<LongPoint> occupied) {
+    public static Set<LongPoint> moveIfSpace(Set<LongPoint> rock, Vector movement, Set<LongPoint> occupied) {
         var candidate =
             rock.stream()
                 .map(point -> point.moveArbitrary(movement))
@@ -120,16 +106,6 @@ public class Day17 {
 //    System.out.println("");
 //  }
 
-  @NotNull
-  static Set<Point> getShape(int towerHighestPoint, int shapeIdx) {
-    var shape =
-        new ArrayList<>(PROCESSED_SHAPES.get(shapeIdx))
-            .stream()
-                .map(point -> point.move(2, towerHighestPoint + 4))
-                .collect(Collectors.toSet());
-    return shape;
-  }
-
     @NotNull
     static Set<LongPoint> getShapeLong(Long towerHighestPoint, int shapeIdx) {
         var shape =
@@ -141,39 +117,7 @@ public class Day17 {
         return shape;
     }
 
-    public static int part1(String instructions) {
-        var instructionsList = Arrays.stream(instructions.split("")).toList();
-        var tower = new HashSet<Point>();
-        int wind = 0;
-        int height = -1;
-        int count = 0;
-        while(count < 2022){
-            Set<Point> shape =
-                getShape(
-                    height,
-                    count % SHAPES.size());
-            while (true) {
-                int movementX = ">".equals(instructionsList.get(wind)) ? 1 : -1;
-                wind = wind +1;
-                wind = wind % instructionsList.size();
-                var horizontal = moveIfSpace(shape, new Vector(movementX, 0), tower);
-                var vertical = moveIfSpace(horizontal, new Vector(0, -1), tower);
-
-                if (horizontal == vertical) {
-                    shape = horizontal;
-                    break;
-                }
-                shape = vertical;
-            }
-            int highestPointInShape = shape.stream().map(Point::j).mapToInt(Integer::intValue).max().getAsInt();
-            height = Math.max(height, highestPointInShape);
-            tower.addAll(shape);
-            count ++;
-        }
-        return height + 1;
-    }
-
-    public static long part2(String instructions) {
+    public static long part(String instructions, Long duration) {
         var instructionsList = Arrays.stream(instructions.split("")).toList();
         var tower = new HashSet<LongPoint>();
         var cache = new HashMap<String, Pair<Long, Long>>();
@@ -181,17 +125,16 @@ public class Day17 {
         int windex = 0; //wind index
         long count = 0;
         long highest = -1;
-        while (count < ELEPHANT_ARE_IMPRESSED_LIMIT){
-            assert count != 2022 || 3068 == highest + 1;
+        while (count < duration){
             int shapeIdx = (int) (count % SHAPES.size());
             Set<LongPoint> shape = getShapeLong(highest, shapeIdx);
 
             var shapeWindKey = windex + "/" + shapeIdx;
             if (cache.containsKey(shapeWindKey)){
                 var period = count - cache.get(shapeWindKey).getValue0(); //count
-                if (count % period == ELEPHANT_ARE_IMPRESSED_LIMIT % period){
+                if (count % period == duration % period){
                     Long heightBefore = cache.get(shapeWindKey).getValue1();
-                    return heightBefore + Math.multiplyExact((highest +1) - heightBefore, Math.floorDiv((ELEPHANT_ARE_IMPRESSED_LIMIT-count), period) + 1);
+                    return heightBefore + Math.multiplyExact((highest +1) - heightBefore, Math.floorDiv((duration-count), period) + 1);
                 }
             } else {
                 cache.put(shapeWindKey, new Pair<>(count, highest + 1));
@@ -207,8 +150,8 @@ public class Day17 {
                         : -1;
                 windex += 1;
                 windex = windex % instructionsList.size();
-                var horizontal = moveIfSpaceLong(shape, new Vector(movementX, 0), tower);
-                var vertical = moveIfSpaceLong(horizontal, new Vector(0, -1), tower);
+                var horizontal = moveIfSpace(shape, new Vector(movementX, 0), tower);
+                var vertical = moveIfSpace(horizontal, new Vector(0, -1), tower);
 
                 if (horizontal == vertical) {
                     shape = horizontal;
@@ -221,15 +164,15 @@ public class Day17 {
             tower.addAll(shape);
             count += 1;
         }
-        throw new IllegalStateException("This is not good!");
+        return highest +1;
     }
 
   public static void main(String[] args) {
     try {
       InputStream i = Day17.class.getClassLoader().getResourceAsStream("2022/day17.txt");
       String instructions = new String(i.readAllBytes());
-      System.out.println("Part1: " + part1(instructions));
-      System.out.println("Part2: " + part2(instructions));
+        System.out.println("Part1: " + part(instructions, 2022L));
+        System.out.println("Part2: " + part(instructions, ELEPHANT_ARE_IMPRESSED_LIMIT));
     } catch (Exception e) {
       e.printStackTrace();
     }

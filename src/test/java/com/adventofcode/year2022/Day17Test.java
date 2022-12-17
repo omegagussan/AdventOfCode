@@ -2,7 +2,7 @@ package com.adventofcode.year2022;
 
 import static org.junit.Assert.assertEquals;
 
-import com.adventofcode.utils.Point;
+import com.adventofcode.utils.LongPoint;
 import java.lang.instrument.Instrumentation;
 import java.util.Set;
 import org.junit.Test;
@@ -12,41 +12,27 @@ public class Day17Test {
     public static final String TEST_INSTRUCTION = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 
     @Test
-    public void getShape(){
+    public void getShapeLong(){
         //line -
-        assertEquals(Set.of(new Point(2,3), new Point(3,3), new Point(4,3), new Point(5,3)), Day17.getShape(-1, 0));
+        assertEquals(Set.of(new LongPoint(2L,3L), new LongPoint(3L,3L), new LongPoint(4L,3L), new LongPoint(5L,3L)), Day17.getShapeLong(-1L, 0));
         //cross +
-        assertEquals(Set.of(new Point(3,5), new Point(4,5), new Point(3,6), new Point(2,5), new Point(3,4)), Day17.getShape(0, 1));
+        assertEquals(Set.of(new LongPoint(3L,5L), new LongPoint(4L,5L), new LongPoint(3L,6L), new LongPoint(2L,5L), new LongPoint(3L,4L)), Day17.getShapeLong(0L, 1));
         // shape L
-        assertEquals(Set.of(new Point(2,3), new Point(3,3), new Point(4,3), new Point(4,4), new Point(4,5)), Day17.getShape(-1, 2));
+        assertEquals(Set.of(new LongPoint(2L,3L), new LongPoint(3L,3L), new LongPoint(4L,3L), new LongPoint(4L,4L), new LongPoint(4L,5L)), Day17.getShapeLong(-1L, 2));
         // line |
-        assertEquals(Set.of(new Point(2,3), new Point(2,4), new Point(2,5), new Point(2,6)), Day17.getShape(-1, 3));
+        assertEquals(Set.of(new LongPoint(2L,3L), new LongPoint(2L,4L), new LongPoint(2L,5L), new LongPoint(2L,6L)), Day17.getShapeLong(-1L, 3));
         // box
-        assertEquals(Set.of(new Point(2,3), new Point(3,3), new Point(2,4), new Point(3,4)), Day17.getShape(-1, 4));
-    }
-
-    @Test
-    public void getShapeAdjustHeight(){
-        //line -
-        assertEquals(Set.of(new Point(2,4), new Point(3,4), new Point(4,4), new Point(5,4)), Day17.getShape(0, 0));
-        //cross +
-        assertEquals(Set.of(new Point(3,6), new Point(4,6), new Point(3,7), new Point(2,6), new Point(3,5)), Day17.getShape(1, 1));
-        // shape L
-        assertEquals(Set.of(new Point(2,4), new Point(3,4), new Point(4,4), new Point(4,5), new Point(4,6)), Day17.getShape(0, 2));
-        // line |
-        assertEquals(Set.of(new Point(2,4), new Point(2,5), new Point(2,6), new Point(2,7)), Day17.getShape(0, 3));
-        // box
-        assertEquals(Set.of(new Point(2,5), new Point(3,5), new Point(2,4), new Point(3,4)), Day17.getShape(0, 4));
+        assertEquals(Set.of(new LongPoint(2L,3L), new LongPoint(3L,3L), new LongPoint(2L,4L), new LongPoint(3L,4L)), Day17.getShapeLong(-1L, 4));
     }
 
     @Test
     public void testPart1(){
-        assertEquals(3068, Day17.part1(TEST_INSTRUCTION));
+        assertEquals(3068, Day17.part(TEST_INSTRUCTION, 2022L));
     }
 
     @Test
     public void testPart2(){
-        assertEquals(1514285714288L, Day17.part2(TEST_INSTRUCTION));
+        assertEquals(1514285714288L, Day17.part(TEST_INSTRUCTION, Day17.ELEPHANT_ARE_IMPRESSED_LIMIT));
     }
 }
 
