@@ -10,21 +10,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.jetbrains.annotations.NotNull;
 
 public class Day16 {
 
+  public static final String STARTING_VALVE = "AA";
+
   record ValveNode(String id, Integer value, List<String> children) {}
 
   public static final String ROW_DELIMITER = "\n";
+  public static final int P2_TIME_LIMIT = 26;
   protected static Map<String, ValveNode> parsedInput;
-
   protected static Map<String, Map<String, Integer>> distances;
 
   @NotNull
@@ -55,6 +60,73 @@ public class Day16 {
   }
 
   @NotNull
+  static Triplet<Integer, List<String>, List<String>> bestMoveWithAnElephant(
+      String currentPlayer,
+      String currentElephant,
+      Set<String> openValves,
+      Integer playerTime,
+      Integer elephantTime
+  ) {
+    if (playerTime < 1 && elephantTime < 1) {
+      return new Triplet<>(0, Collections.emptyList(), Collections.emptyList());
+    }
+    boolean playerGoes = playerTime >= elephantTime;
+    String target = playerGoes ? currentPlayer : currentElephant;
+    int targetTime = playerGoes ? playerTime : elephantTime;
+    int valveOpen = parsedInput.get(target).value() * (targetTime - 1);
+
+    Optional<Triplet<Integer, List<String>, List<String>>> candidate = getTripletCandidates(
+        currentPlayer,
+        currentElephant,
+        openValves,
+        playerTime,
+        elephantTime,
+        playerGoes,
+        target,
+        targetTime).max(Comparator.comparingInt(Triplet::getValue0));
+    var v = candidate.orElseGet(() -> playerGoes ? bestMoveWithAnElephant(STARTING_VALVE, currentElephant, openValves, 0, elephantTime): bestMoveWithAnElephant(currentPlayer,
+        STARTING_VALVE, openValves, playerTime, 0));
+    return new Triplet<>(
+            valveOpen + v.getValue0(),
+            playerGoes ? Streams.concat(v.getValue1().stream(), Stream.of(currentPlayer)).toList() : v.getValue1(),
+            !playerGoes ? Streams.concat(v.getValue2().stream(), Stream.of(currentElephant)).toList() : v.getValue2());
+  }
+
+  @NotNull
+  private static Stream<Triplet<Integer, List<String>, List<String>>> getTripletCandidates(
+      String currentPlayer,
+      String currentElephant,
+      Set<String> openValves,
+      Integer playerTime,
+      Integer elephantTime,
+      boolean playerGoes,
+      String target,
+      int targetTime
+  ) {
+    return distances.get(target).entrySet().stream()
+          .filter(entry -> !openValves.contains(entry.getKey()))
+          .filter(entry -> targetTime - entry.getValue() - 1 > 0)
+          .map(
+              entry -> {
+                var targetOpenedValves =
+                    Streams.concat(openValves.stream(), Stream.of(entry.getKey()))
+                        .collect(Collectors.toSet());
+                return playerGoes ? bestMoveWithAnElephant(
+                    entry.getKey(),
+                    currentElephant,
+                    targetOpenedValves,
+                    playerTime - entry.getValue() - 1,
+                    elephantTime) :
+                      bestMoveWithAnElephant(
+                          currentPlayer,
+                          entry.getKey(),
+                          targetOpenedValves,
+                          playerTime,
+                    elephantTime - entry.getValue() - 1);
+              });
+  }
+
+  @NotNull
   static Stream<ValveNode> parseInput(String instructions) {
     Matcher m = Pattern.compile("Valve (.*) has flow rate=(.*); tunnel(.*)").matcher("");
     return Arrays.stream(instructions.split(ROW_DELIMITER))
@@ -72,10 +144,7 @@ public class Day16 {
 
   static int distanceFromAB(
       String a, String b, Map<String, Map<String, Integer>> distanceBuilder, Set<String> visited) {
-    if (a.equals(b)) {
-      return 0;
-    }
-    ;
+    if (a.equals(b)) {return 0;}
     if (distanceBuilder.get(b).containsKey(a)) {
       return distanceBuilder.get(b).get(a);
     }
@@ -136,23 +205,33 @@ public class Day16 {
     return distances;
   }
 
-  public static int part2(String instructions) {
-    return 2;
+  public static int part2(String instruction) {
+    parsedInput = parseInput(instruction).collect(Collectors.toMap(t -> t.id, t -> t));
+    distances = getDistances();
+    AtomicReference<Triplet<Integer, List<String>, List<String>>> best = new AtomicReference<>(
+        new Triplet<>(0, List.of(), List.of()));
+
+    Map<String, Integer> startDistanceMap = distances.get(STARTING_VALVE);
+    startDistanceMap.keySet().forEach(player -> {
+      startDistanceMap.keySet().stream().filter(k -> !k.equals(player)).forEach(elephant -> {
+        var triplet = bestMoveWithAnElephant(player, elephant, Set.of(player, elephant), P2_TIME_LIMIT - startDistanceMap.get(player),P2_TIME_LIMIT - startDistanceMap.get(elephant));
+        if (triplet.getValue0() > best.get().getValue0()){
+          best.set(triplet);
+        }
+      });
+    });
+
+    return best.get().getValue0();
   }
 
   public static int part1(String instruction) {
-    var leafs = parseInput(instruction).collect(Collectors.toMap(t -> t.id, t -> t));
-    parsedInput = leafs;
+    parsedInput = parseInput(instruction).collect(Collectors.toMap(t -> t.id, t -> t));
     distances = getDistances();
-    var best =
-        distances.get("AA").keySet().stream()
-            .filter(integer -> parsedInput.get(integer).value > 0)
-            .map(
-                integer ->
-                    bestMove(integer, Set.of(integer), 29 - distances.get("AA").get(integer)))
-            .max(Comparator.comparingInt(Pair::getValue0))
-            .get();
-    return best.getValue0();
+    return distances.get(STARTING_VALVE).keySet().stream()
+        .filter(integer -> parsedInput.get(integer).value > 0)
+        .map(integer -> bestMove(integer, Set.of(integer), 29 - distances.get(STARTING_VALVE).get(integer)))
+        .max(Comparator.comparingInt(Pair::getValue0))
+        .get().getValue0();
   }
 
   public static void main(String[] args) {

@@ -41,6 +41,13 @@ public class Day16Test {
     }
 
     @Test
+    public void part2(){
+        var expected = Day16.part2(
+            TEST_INSTRUCTION);
+        assertEquals(1707, expected);
+    }
+
+    @Test
     public void part1DistanceMap(){
         Day16.parsedInput = Day16.parseInput(TEST_INSTRUCTION).collect(
             Collectors.toMap(ValveNode::id, t -> t));
