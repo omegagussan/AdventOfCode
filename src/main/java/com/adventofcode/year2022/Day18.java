@@ -118,21 +118,6 @@ public class Day18 {
     }
 
     @NotNull
-    private static List<Triplet<Integer, Integer, Integer>> getMaxMin(
-        Set<Triplet<Integer, Integer, Integer>> cubes) {
-        var max = IntStream.rangeClosed(0, 2)
-            .map(i -> cubes.stream().map(t -> (int) t.getValue(i)).max(Integer::compareTo).get()).toArray();
-
-        var min = IntStream.rangeClosed(0, 2)
-            .map(i -> cubes.stream().map(t -> (int) t.getValue(i)).min(Integer::compareTo).get()).toArray();
-
-        return List.of(
-            new Triplet<>(max[0] + 1, max[1] + 1, max[2] + 1),
-            new Triplet<>(min[0] -1 , min[1] -1 , min[2] -1)
-        );
-    }
-
-    @NotNull
     private static Triplet<Integer, Integer, Integer> getLimit(
         Set<Triplet<Integer, Integer, Integer>> cubes,
         Function<Comparator<Integer>, BinaryOperator<Integer>> reducingFn,
