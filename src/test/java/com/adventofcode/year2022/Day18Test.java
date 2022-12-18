@@ -2,7 +2,6 @@ package com.adventofcode.year2022;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.HashSet;
 import org.javatuples.Triplet;
 import org.junit.Test;
 
@@ -43,7 +42,7 @@ public class Day18Test {
 
     @Test
     public void testPermutations(){
-        assertEquals(6, Day18.getPermutations(new Triplet<>(0, 0, 0)).size());
+        assertEquals(6, Day18.getAdjacentBoxes(new Triplet<>(0, 0, 0)).size());
     }
 }
 
