@@ -14,6 +14,7 @@ public class StringMatrixParser {
         .toArray(String[][]::new);
   }
 
+
   static String[] parseRow(String columnDelimiter, String r) {
     return r.split(columnDelimiter);
   }
