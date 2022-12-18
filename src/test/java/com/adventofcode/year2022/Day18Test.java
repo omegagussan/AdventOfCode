@@ -29,6 +29,11 @@ public class Day18Test {
     }
 
     @Test
+    public void testPart2(){
+        assertEquals(58L, Day18.part2(TEST_INSTRUCTION));
+    }
+
+    @Test
     public void testPart1easy(){
         assertEquals(10L, Day18.part1("""
             1,1,1
