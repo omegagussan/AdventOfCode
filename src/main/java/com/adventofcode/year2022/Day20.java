@@ -31,8 +31,8 @@ public class Day20 {
                 })
             .collect(Collectors.toCollection(LinkedList::new));
     var state = extracted(originalOrder.size(), originalOrder);
-    var lastState = state.stream().map(Pair::getValue0).map(cache::get).toList();
-    return getAnswer(lastState).stream().mapToLong(Long::longValue).sum();
+    var newOrderValues = state.stream().map(Pair::getValue0).map(cache::get).toList();
+    return getAnswer(newOrderValues).stream().mapToLong(Long::longValue).sum();
   }
 
   static List<Long> getAnswer(List<Long> lst) {
@@ -53,7 +53,7 @@ public class Day20 {
         state.addLast(state.pollFirst());
       }
       var target = state.removeFirst();
-      //var preRotate = target.getValue1() % (state.size() -1);
+      //var preRotate = target.getValue1() % (state.size() -1); moved to cache for speedup
       int rotate = Math.toIntExact(target.getValue1());
       for (int j = 0; j < Math.abs(rotate); j++) {
         if (rotate > 0) {
@@ -93,12 +93,9 @@ public class Day20 {
             .collect(Collectors.toCollection(LinkedList::new));
     for (int z = 0; z < 10; z++) {
       originalOrder = extracted(originalOrder.size(), originalOrder);
-      System.out.println("done with " + z);
-      System.out.println(originalOrder.stream().map(Pair::getValue0).map(cache::get).toList());
     }
-    var lastState = originalOrder.stream().map(Pair::getValue0).map(cache::get).toList();
-    List<Long> longs = getAnswer(lastState);
-    return longs.stream().mapToLong(Long::longValue).sum();
+    var newOrderValues = originalOrder.stream().map(Pair::getValue0).map(cache::get).toList();
+    return getAnswer(newOrderValues).stream().mapToLong(Long::longValue).sum();
   }
 
   public static void main(String[] args) {
