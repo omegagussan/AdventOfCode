@@ -18,14 +18,19 @@ public class Day20Test {
   """;
     @Test
     public void testPart1(){
-        assertEquals(3, Day20.part1(TEST_INSTRUCTION));
+        assertEquals(3L, Day20.part1(TEST_INSTRUCTION));
+    }
+
+    @Test
+    public void testPart2(){
+        assertEquals(1623178306L, Day20.part2(TEST_INSTRUCTION));
     }
 
     @Test
     public void testGetAnswerList(){
-        var given = List.of(1, 2, -3, 4, 0, 3, -2);
+        var given = List.of(1L, 2L, -3L, 4L, 0L, 3L, -2L);
         var result = Day20.getAnswer(given);
-        List<Integer> expected = List.of(4, - 3, 2);
+        List<Long> expected = List.of(4L, -3L, 2L);
         assertEquals(3, result.size());
         assertEquals(expected, result);
     }
