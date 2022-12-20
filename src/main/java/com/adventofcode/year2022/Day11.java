@@ -18,7 +18,6 @@ public class Day11 {
         List<Long> items,
         Function<Long, Long> op,
         Function<Long, Boolean> test,
-
         Integer trueTarget,
         Integer falseTarget
     ){}
