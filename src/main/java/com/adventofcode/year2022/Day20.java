@@ -1,7 +1,9 @@
 package com.adventofcode.year2022;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,51 +22,34 @@ public class Day20 {
         .toList();
     var originalOrder = IntStream.range(0, originalOrderValues.size())
         .mapToObj(z -> new Pair<>(z, originalOrderValues.get(z))).toList();
-    Deque<Pair<Integer, Integer>> state = extracted(originalOrder.size(), originalOrder);
-    return getAnswer(state.stream().map(Pair::getValue1).toList()).stream().mapToInt(Integer::intValue).sum();
+    var state = extracted(originalOrder.size(), originalOrder);
+    return getAnswer(state).stream().mapToInt(Integer::intValue).sum();
   }
 
   static List<Integer> getAnswer(List<Integer> lst) {
     int idx = lst.indexOf(0);
-    List<Integer> lll = Stream.of(1000, 2000, 3000)
+    List<Integer> tmp = Stream.of(1000, 2000, 3000)
         .map(v -> v + idx)
         .map(v -> v % lst.size())
         .map(lst::get).mapToInt(Integer::intValue).boxed().toList();
-    return lll;
+    return tmp;
   }
 
   @NotNull
-  static Deque<Pair<Integer, Integer>> extracted(Integer steps,
+  static List<Integer> extracted(Integer steps,
       List<Pair<Integer, Integer>> originalOrder) {
-    Deque<Pair<Integer, Integer>> state = new LinkedList<>(originalOrder);
-    int length = originalOrder.size();
+    ArrayList<Pair<Integer, Integer>> state = new ArrayList<>(originalOrder);
     for (int i = 0; i < steps; i++){
-      int firstShift = 0; //is always smaller then length
-      while (state.peekFirst().getValue0() != i){
-        state.addLast(state.pollFirst());
-        firstShift ++;
+      while (state.get(0).getValue0() != i){
+        Collections.rotate(state, -1);
       }
-      var target = state.poll();
-
-      Integer secondShift = target.getValue1() % length;
-      for (int j=0; j<Math.abs(secondShift); j++){
-        if (secondShift < 0){
-          state.addFirst(state.pollLast());
-        } else {
-          state.addLast(state.pollFirst());
-        }
-      }
-      state.addFirst(target);
-
-      Integer effectiveShift = (firstShift + secondShift) > length ? (firstShift + secondShift +1) : (firstShift + secondShift);
-      //effectiveShift = (firstShift + secondShift) % length;
-      effectiveShift = effectiveShift <= 0 ? effectiveShift + length - 1 : effectiveShift;
-      for (int j=0; j<Math.abs(effectiveShift); j++){
-          state.addFirst(state.pollLast());
-      }
-      assert state.size() == length;
+      var target = state.remove(0);
+      Integer rotate = target.getValue1();
+      Collections.rotate(state, -rotate);
+      state.add(0, target);
+      Collections.rotate(state, rotate);
     }
-    return state;
+    return state.stream().map(Pair::getValue1).toList();
   }
 
   public static int part2(String instructions){
