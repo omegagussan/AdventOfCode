@@ -36,5 +36,15 @@ public class Day19Test {
     public void testPart1(){
         assertEquals(33, Day19.part1(TEST_INSTRUCTION, Day19.TIME));
     }
+    @Test
+    public void testPart2(){
+        assertEquals(56, Day19.part2(TEST_INSTRUCTION.split("\n")[0], Day19.TIME2));
+    }
+
+    @Test
+    public void testPart2Again(){
+        assertEquals(62, Day19.part2(TEST_INSTRUCTION.split("\n")[1], Day19.TIME2));
+    }
+
 }
 

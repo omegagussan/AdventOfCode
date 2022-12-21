@@ -17,6 +17,8 @@ public class Day19 {
   public static final String ROW_DELIMITER = "\n";
 
   public static final int TIME = 24;
+  public static final int TIME2 = 32;
+
   public static int geodeHeuristic = Integer.MIN_VALUE;
 
   @NotNull
@@ -183,12 +185,30 @@ public class Day19 {
     );
   }
 
+  public static long part2(String instructions, Integer time) {
+    var blueprints = parseInput(instructions).toList();
+    var v = blueprints.stream().limit(3)
+        .map(
+            bluePrintRow -> {
+              // robots: {ore clay obsidian geode} | resources: {ore clay obsidian geode}
+              var robotsAndResources =
+                  List.of(1, 0, 0, 0, 0, 0, 0, 0);
+              HashMap<Pair<List<Integer>, Integer>, Integer> cache = new HashMap<>();
+              geodeHeuristic = Integer.MIN_VALUE;
+              return maxGeodes(bluePrintRow, robotsAndResources, time, cache);
+            })
+        .toList();
+
+    return v.stream().reduce(1, Math::multiplyExact);
+
+  }
+
   public static void main(String[] args) {
     try {
       InputStream i = Day19.class.getClassLoader().getResourceAsStream("2022/day19.txt");
       String instructions = new String(i.readAllBytes());
       System.out.println("Part1: " + part1(instructions, TIME));
-      System.out.println("Part2: " + part2(instructions));
+      System.out.println("Part2: " + part2(instructions, TIME2));
     } catch (Exception e) {
       e.printStackTrace();
     }
