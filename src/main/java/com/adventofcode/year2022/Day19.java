@@ -146,7 +146,6 @@ public class Day19 {
                 currentClayRobots + 1,
                 currentObsidianRobots,
                 currentGeodeRobots,
-                currentGeodeRobots,
                 ore - clayRobotOreRequirement,
                 clay,
                 obsidian,
@@ -163,7 +162,7 @@ public class Day19 {
   }
 
   private static int getMaxGeodesPossible(Integer time, Integer geodes, Integer currentGeodeRobots) {
-    int maxGeodesPossible = geodes;
+    int maxGeodesPossible = Integer.valueOf(geodes);
     for(int i = 0; i < time; i++){
       maxGeodesPossible += currentGeodeRobots + i;
     }
