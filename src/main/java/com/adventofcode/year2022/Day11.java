@@ -25,7 +25,7 @@ public class Day11 {
   @NotNull
   static Integer getTarget(String m, String matcher) {
       return Arrays.stream(m.split(ROW_DELIMITER))
-          .filter(s1 -> s1.contains(String.format("If %s: throw to monkey ", matcher)))
+          .filter(s1 -> s1.contains(String.format("If %s: throw to Monkey ", matcher)))
           .map(s1 -> Integer.parseInt(s1.replaceAll("[^0-9]", "")))
           .findFirst().get();
   }

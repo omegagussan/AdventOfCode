@@ -1,12 +1,10 @@
 package com.adventofcode.year2022;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -19,6 +17,7 @@ public class Day19 {
   public static final String ROW_DELIMITER = "\n";
 
   public static final int TIME = 24;
+  public static int geodeHeuristic = Integer.MIN_VALUE;
 
   @NotNull
   static Stream<List<Integer>> parseInput(String instructions) {
@@ -44,14 +43,13 @@ public class Day19 {
     var blueprints = parseInput(instructions).toList();
     return blueprints.stream()
         .map(
-            bp -> {
+            bluePrintRow -> {
+              // robots: {ore clay obsidian geode} | resources: {ore clay obsidian geode}
               var robotsAndResources =
-                  new ArrayList<>(
-                      List.of(
-                          1, 0, 0, 0, 0, 0, 0, 0)); // ore clay obsidian geode | ore clay obsidian geode
+                  List.of(1, 0, 0, 0, 0, 0, 0, 0);
               HashMap<Pair<List<Integer>, Integer>, Integer> cache = new HashMap<>();
-              var max = maxGeodes(bp, robotsAndResources, time, cache);
-              return max * bp.get(0);
+              geodeHeuristic = Integer.MIN_VALUE;
+              return maxGeodes(bluePrintRow, robotsAndResources, time, cache) * bluePrintRow.get(0);
             })
         .mapToInt(Integer::intValue)
         .sum();
@@ -59,38 +57,121 @@ public class Day19 {
 
   static Integer maxGeodes(
       List<Integer> bp,
-      List<Integer> oldGen,
+      List<Integer> oldGenRnR, // RobotsAndResources
       Integer time,
       HashMap<Pair<List<Integer>, Integer>, Integer> cache) {
+
+    Integer currentOreRobots = oldGenRnR.get(0);
+    Integer currentClayRobots = oldGenRnR.get(1);
+    Integer currentObsidianRobots = oldGenRnR.get(2);
+    Integer currentGeodeRobots = oldGenRnR.get(3);
+
+    Integer ore = oldGenRnR.get(4);
+    Integer clay = oldGenRnR.get(5);
+    Integer obsidian = oldGenRnR.get(6);
+    Integer geodes = oldGenRnR.get(7);
+
     if (time == 0) {
-      return 0;
+      geodeHeuristic = Math.max(geodeHeuristic, geodes);
+      return geodes;
     }
-    var key = new Pair<>(oldGen, time);
+    var key = new Pair<>(oldGenRnR, time);
     if (cache.containsKey(key)) {
       return cache.get(key);
     }
-    AtomicInteger res = new AtomicInteger();
-    nextEpochCandidates(bp, oldGen, time).stream()
-        .map(
-            newGen ->
-                new Pair<>(produce(oldGen, newGen),
-                    !Objects.equals(newGen.get(7), newGen.get(7))))
-        .forEach(
-            integers -> {
-              var x = maxGeodes(bp, integers.getValue0(), time - 1, cache);
-              var curr = integers.getValue1() ? integers.getValue0().get(3) -1 : integers.getValue0().get(3);
-              res.set(Math.max(x + curr, res.get()));
-            });
-    int rez = res.get();
-    cache.put(key, rez);
-    return rez;
+
+    //pruning
+    if(getMaxGeodesPossible(time, geodes, currentGeodeRobots) < geodeHeuristic){return geodes;}
+
+
+    Integer oreOreRequirement = bp.get(1);
+    Integer clayRobotOreRequirement = bp.get(2);
+    Integer obsidianOreRequirement = bp.get(3);
+    Integer obsidianClayRequirement = bp.get(4);
+    Integer geodeOreRequirement = bp.get(5);
+    Integer geodeObsidianRequirement = bp.get(6);
+
+    int epochMaxGeodes = 0;
+    // geode - always craft when can
+    if (ore >= geodeOreRequirement && obsidian >= geodeObsidianRequirement) {
+      var a =
+          List.of(
+              currentOreRobots,
+              currentClayRobots,
+              currentObsidianRobots,
+              currentGeodeRobots + 1,
+              ore - geodeOreRequirement,
+              clay,
+              obsidian - geodeObsidianRequirement,
+              geodes);
+      epochMaxGeodes = Math.max(epochMaxGeodes, maxGeodes(bp, produce(oldGenRnR, a), time - 1, cache));
+    } else {
+      //we can only craft one geode bot per turn  =>  we never need more than geodeObsidianRequirement obsidian bots
+      if (geodeObsidianRequirement > currentObsidianRobots && ore >= obsidianOreRequirement && clay >= obsidianClayRequirement) {
+        var a =
+            List.of(
+                currentOreRobots,
+                currentClayRobots,
+                currentObsidianRobots + 1,
+                currentGeodeRobots,
+                ore - obsidianOreRequirement,
+                clay - obsidianClayRequirement,
+                obsidian,
+                geodes);
+        epochMaxGeodes = Math.max(epochMaxGeodes, maxGeodes(bp, produce(oldGenRnR, a), time - 1, cache));
+      }
+
+      // ore -- if it can justify cost
+      Integer biggestOreCost = Collections.max(
+          List.of(geodeOreRequirement, obsidianOreRequirement, clayRobotOreRequirement));
+      if (ore >= oreOreRequirement && biggestOreCost > currentOreRobots){
+        var a =
+            List.of(
+                currentOreRobots + 1,
+                currentClayRobots,
+                currentObsidianRobots,
+                currentGeodeRobots,
+                ore - oreOreRequirement,
+                clay,
+                obsidian,
+                geodes);
+        epochMaxGeodes = Math.max(epochMaxGeodes, maxGeodes(bp, produce(oldGenRnR, a), time - 1, cache));
+      }
+
+      //we can only craft one geode bot per turn  =>  we never need more than geodeObsidianRequirement obsidian bots
+      if (currentClayRobots < obsidianClayRequirement && ore >= clayRobotOreRequirement) {
+        var a =
+            List.of(
+                currentOreRobots,
+                currentClayRobots + 1,
+                currentObsidianRobots,
+                currentGeodeRobots,
+                currentGeodeRobots,
+                ore - clayRobotOreRequirement,
+                clay,
+                obsidian,
+                geodes);
+        epochMaxGeodes = Math.max(epochMaxGeodes, maxGeodes(bp, produce(oldGenRnR, a), time - 1, cache));
+      }
+
+      // do nothing
+      epochMaxGeodes = Math.max(epochMaxGeodes, maxGeodes(bp, produce(oldGenRnR, oldGenRnR), time - 1, cache));
+    }
+
+    cache.put(key, epochMaxGeodes);
+    return epochMaxGeodes;
+  }
+
+  private static int getMaxGeodesPossible(Integer time, Integer geodes, Integer currentGeodeRobots) {
+    int maxGeodesPossible = geodes;
+    for(int i = 0; i < time; i++){
+      maxGeodesPossible += currentGeodeRobots + i;
+    }
+    return maxGeodesPossible;
   }
 
   @NotNull
-  private static List<Integer> produce(
-      List<Integer> oldRobots,
-      List<Integer> newRobots
-  ) {
+  private static List<Integer> produce(List<Integer> oldRobots, List<Integer> newRobots) {
     return List.of(
         newRobots.get(0),
         newRobots.get(1),
@@ -99,97 +180,8 @@ public class Day19 {
         newRobots.get(4) + oldRobots.get(0),
         newRobots.get(5) + oldRobots.get(1),
         newRobots.get(6) + oldRobots.get(2),
-        newRobots.get(7) + oldRobots.get(3));
-  }
-  //    var v= tmp.stream()
-  //        .map(state -> {
-  //              List<Integer> resourcesWithout = state.subList(3, 6);
-  //              var key = Joiner.on(",").join(resourcesWithout);
-  //              if (cache.containsKey(key)){
-  //                var w = cache.get(key).stream()
-  //                    .map(l -> Streams.zip(state.stream(), l.stream(),
-  // Integer::sum).toList()).toList();
-  //                return w.stream().map(ztate -> new Pair<>(ztate, time-1));
-  //              } else {
-  //                var vv = extracted(bp, state, time - 1, cache, maxCosts);
-  //                var diff = vv.stream().map(pair -> Streams.zip(pair.getValue0().stream(),
-  //                    state.stream().map(integer -> -integer), Integer::sum).toList()).toList();
-  //                cache.put(key, diff);
-  //                return vv.stream();
-  //              }
-  //        })
-
-  @NotNull
-  static List<List<Integer>> nextEpochCandidates(
-      List<Integer> bp, List<Integer> state, int timeLeft) {
-    List<List<Integer>> candidates = new ArrayList<>();
-    // geode
-    Integer ore = state.get(4);
-    Integer clay = state.get(5);
-    Integer obsidian = state.get(6);
-
-    Integer geodeOreRequirement = bp.get(5);
-    Integer geodeObsidianRequirement = bp.get(6);
-    Integer ObsidianOreRequirement = bp.get(3);
-    Integer ObsidanClayRequirement = bp.get(4);
-    if (ore >= geodeOreRequirement && obsidian >= geodeObsidianRequirement) {
-      var a =
-          List.of(
-              state.get(0),
-              state.get(1),
-              state.get(2),
-              state.get(3) + 1,
-              ore - geodeOreRequirement,
-              clay,
-              obsidian - geodeObsidianRequirement,
-              state.get(7));
-      return List.of(a);
-    }
-    if (ore >= ObsidianOreRequirement && clay >= ObsidanClayRequirement) {
-      var a =
-          List.of(
-              state.get(0),
-              state.get(1),
-              state.get(2) + 1,
-              state.get(3),
-              ore - ObsidianOreRequirement,
-              clay - ObsidanClayRequirement,
-              obsidian,
-              state.get(7));
-      return List.of(a);
-    }
-    // ore -- if it can justify cost
-    if (ore >= bp.get(1) && timeLeft > bp.get(1)) {
-      // if (ore >= bp.get(1)){
-      var a =
-          List.of(
-              state.get(0) + 1,
-              state.get(1),
-              state.get(2),
-              state.get(3),
-              ore - bp.get(1),
-              clay,
-              obsidian,
-              state.get(7));
-      candidates.add(a);
-    }
-    // clay
-    Integer clayRobotCost = bp.get(2);
-    if (ore >= clayRobotCost) {
-      var a =
-          List.of(
-              state.get(0),
-              state.get(1) + 1,
-              state.get(2),
-              state.get(3),
-              ore - clayRobotCost,
-              clay,
-              obsidian,
-              state.get(7));
-      candidates.add(a);
-    }
-    candidates.add(state);
-    return candidates;
+        newRobots.get(7) + oldRobots.get(3)
+    );
   }
 
   public static void main(String[] args) {
