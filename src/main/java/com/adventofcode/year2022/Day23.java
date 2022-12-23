@@ -20,9 +20,9 @@ public class Day23 {
   public static final String ROW_DELIMITER = "\n";
 
   public static long part2(String instructions) {
-    return 2;
+    var elfMatrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
+    return extractedUntil(elfMatrix) + 1;
   }
-
   public static Point elfMove(Map<Point, String> elfs, Pair<Point, List<Point>> pair, int i) {
     var elf = pair.getValue0();
     var neighbourhood = pair.getValue1();
@@ -118,6 +118,56 @@ public class Day23 {
       assert lastRoundELfs.size() == totalElfs;
     }
     return elfs;
+  }
+
+  @NotNull
+  static int extractedUntil(String[][] elfMatrix) {
+    Map<Point, String> elfs = getInitState(elfMatrix);
+    var lastRoundELfs =
+        elfs.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+    final var totalElfs = elfs.size();
+    int rounds = 0;
+    while(true){
+      int finalR = rounds;
+      var elfDestinations =
+          elfs.entrySet().stream()
+              .map(
+                  entry ->
+                      new Pair<>(
+                          new Pair<>(
+                              entry.getKey(),
+                              Point.getAdjacent(entry.getKey()).stream()
+                                  .filter(ap -> !elfs.containsKey(ap))
+                                  .toList()),
+                          entry.getValue()))
+              .map(pair -> new Pair<>(elfMove(elfs, pair.getValue0(), finalR), pair.getValue1()))
+              .toList();
+      Map<Point, List<Pair<Point, String>>> destinationCounts =
+          elfDestinations.stream().collect(Collectors.groupingBy(Pair::getValue0, Collectors.toList()));
+
+      Map<String, Point> finalLastRoundELfs = lastRoundELfs;
+      destinationCounts.entrySet().stream()
+          .filter(e -> e.getValue().size() == 1)
+          .forEach(
+              kv -> {
+                var elfName = kv.getValue().get(0).getValue1();
+                var elfPoint = kv.getValue().get(0).getValue0();
+                var oldElfCord = finalLastRoundELfs.get(elfName);
+                elfs.remove(oldElfCord);
+                elfs.put(elfPoint, elfName);
+              });
+      var tmp =
+          elfs.entrySet().stream()
+              .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+      if (tmp.equals(lastRoundELfs)){
+        break;
+      }
+      lastRoundELfs = tmp;
+      assert elfs.size() == totalElfs;
+      assert lastRoundELfs.size() == totalElfs;
+      rounds ++;
+    }
+    return rounds;
   }
 
   @NotNull

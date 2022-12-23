@@ -40,6 +40,11 @@ public class Day23Test {
     }
 
     @Test
+    public void testPart2(){
+        assertEquals(20L, Day23.part2(INSTRUCTIONS));
+    }
+
+    @Test
     public void testDraw(){
         var elfMatrix = StringMatrixParser.parse(INSTRUCTIONS, Day23.ROW_DELIMITER, "");
         var state = Day23.getInitState(elfMatrix);
