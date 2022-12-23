@@ -33,4 +33,16 @@ public class VectorTest {
     var expected = List.of(new Point(0,1), new Point(0,2), new Point(0,3));
     assertEquals(expected, given.consistsOf(new Point(0,1)));
   }
+
+  @Test
+  public void testTurn(){
+    var given = new Vector(1,0);
+    assertEquals(new Vector(0, 1), given.turn("R"));
+  }
+
+  @Test
+  public void testTurn2(){
+    var given = new Vector(0,-1);
+    assertEquals(new Vector(-1, 0), given.turn("L"));
+  }
 }

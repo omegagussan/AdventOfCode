@@ -31,7 +31,7 @@ public record Point(Integer i, Integer j){
     return IntStream.range(-1, 2)
         .mapToObj(i -> IntStream.range(-1, 2)
             .mapToObj(j -> new Point(p.i() + i, p.j() + j)))
-        .flatMap(pointStream -> pointStream).filter(c -> c != p).toList();
+        .flatMap(pointStream -> pointStream).filter(c -> !c.equals(p)).toList();
   }
 
   public static <T> boolean isWithinGrid(T[][] grid, Point candidate) {
