@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import com.adventofcode.utils.Point;
 import com.adventofcode.utils.StringMatrixParser;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.Test;
 
 public class Day23Test {
@@ -68,7 +67,7 @@ public class Day23Test {
     @Test
     public void extractedOneRound(){
         var elfMatrix = StringMatrixParser.parse(INSTRUCTIONS, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(1, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(1, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
             .....#...
@@ -87,7 +86,7 @@ public class Day23Test {
     @Test
     public void extractedTwoRound(){
         var elfMatrix = StringMatrixParser.parse(INSTRUCTIONS, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(2, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(2, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
             ......#....
@@ -106,7 +105,7 @@ public class Day23Test {
     @Test
     public void extractedFourRound(){
         var elfMatrix = StringMatrixParser.parse(INSTRUCTIONS, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(4, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(4, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
             ......#....
@@ -126,7 +125,7 @@ public class Day23Test {
     @Test
     public void extracted5Round(){
         var elfMatrix = StringMatrixParser.parse(INSTRUCTIONS, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(5, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(5, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
            ......#....
@@ -147,7 +146,7 @@ public class Day23Test {
     @Test
     public void extracted10Round(){
         var elfMatrix = StringMatrixParser.parse(INSTRUCTIONS, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(10, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(10, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
         ......#.....
@@ -168,7 +167,7 @@ public class Day23Test {
     @Test
     public void extractedSmallOneRound(){
         var elfMatrix = StringMatrixParser.parse(SMALL, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(1, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(1, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
             ##
@@ -183,7 +182,7 @@ public class Day23Test {
     @Test
     public void extractedSmallThreeRound(){
         var elfMatrix = StringMatrixParser.parse(SMALL, Day23.ROW_DELIMITER, "");
-        Map<Point, String> given = Day23.extracted(3, elfMatrix);
+        Map<Point, String> given = Day23.doIterationUntilRounds(3, elfMatrix);
         var result = Day23.draw(given);
         var expected = """
             ..#..

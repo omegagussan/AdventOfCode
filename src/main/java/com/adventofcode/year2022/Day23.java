@@ -4,13 +4,13 @@ import com.adventofcode.utils.Point;
 import com.adventofcode.utils.StringMatrixParser;
 import com.google.common.collect.Streams;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -19,161 +19,121 @@ public class Day23 {
 
   public static final String ROW_DELIMITER = "\n";
 
-  public static long part2(String instructions) {
-    var elfMatrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
-    return extractedUntil(elfMatrix) + 1;
-  }
-  public static Point elfMove(Map<Point, String> elfs, Pair<Point, List<Point>> pair, int i) {
+  private final static BiFunction<List<Point>,Point, Optional<Point>> MOVE_NORTH = (points, current) -> {
+    if (points.stream().filter(point1 -> point1.i() == current.i() - 1).count() == 3) {
+      return Optional.of(new Point(current.i() - 1, current.j()));
+    }
+    return Optional.empty();
+  };
+  private final static BiFunction<List<Point>, Point, Optional<Point>> MOVE_SOUTH = (points, current) -> {
+    if (points.stream().filter(point1 -> point1.i() == current.i() + 1).count() == 3) {
+      return Optional.of(new Point(current.i() + 1, current.j()));
+    }
+    return Optional.empty();
+  };
+  private final static BiFunction<List<Point>, Point, Optional<Point>> MOVE_WEST = (points, current) -> {
+    if (points.stream().filter(point -> point.j() == current.j() - 1).count() == 3) {
+      return Optional.of(new Point(current.i(), current.j() - 1));
+    }
+    return Optional.empty();
+  };
+  private final static BiFunction<List<Point>, Point, Optional<Point>> MOVE_EAST = (points, current) -> {
+    if (points.stream().filter(point1 -> point1.j() == current.j() + 1).count() == 3) {
+      return Optional.of(new Point(current.i(), current.j() + 1));
+    }
+    return Optional.empty();
+  };
+
+  private final static List<BiFunction<List<Point>, Point, Optional<Point>>> ELF_MOVES = List.of(MOVE_NORTH, MOVE_SOUTH, MOVE_WEST, MOVE_EAST);
+
+
+  public static Point elfMove(Pair<Point, List<Point>> pair, int i) {
     var elf = pair.getValue0();
     var neighbourhood = pair.getValue1();
-    List<Point> free = neighbourhood.stream().filter(point -> !elfs.containsKey(point)).toList();
-    if (free.size() == 8) {
+    if (neighbourhood.size() == 8) {
       return elf;
     }
-    Supplier<Optional<Point>> a = () -> {
-      if (free.stream().filter(point1 -> point1.i() == elf.i() - 1).count() == 3) {
-        return Optional.of(new Point(elf.i() - 1, elf.j()));
-      }
-      return Optional.empty();
-    };
-    Supplier<Optional<Point>> b = () -> {
-      if (free.stream().filter(point1 -> point1.i() == elf.i() + 1).count() == 3) {
-        return Optional.of(new Point(elf.i() + 1, elf.j()));
-      }
-      return Optional.empty();
-    };
-    Supplier<Optional<Point>> c = () -> {
-      if (free.stream().filter(point1 -> point1.j() == elf.j() + 1).count() == 3) {
-        return Optional.of(new Point(elf.i(), elf.j() + 1));
-      }
-      return Optional.empty();
-    };
-    Supplier<Optional<Point>> d = () -> {
-      if (free.stream().filter(point -> point.j() == elf.j() - 1).count() == 3) {
-        return Optional.of(new Point(elf.i(), elf.j() - 1));
-      }
-      return Optional.empty();
-    };
-    var ops = new ArrayList<>(List.of(a, b, d, c));
-    var newOrder = Streams.concat(ops.stream().skip(i % 4), ops.stream()).limit(4).toList();
-    Optional<Point> first = newOrder.stream()
-        .map(Supplier::get)
+    var newOrder = Streams.concat(ELF_MOVES.stream().skip(i % 4), ELF_MOVES.stream()).limit(4).toList();
+    return newOrder.stream()
+        .map(f -> f.apply(neighbourhood, elf))
         .filter(Optional::isPresent)
-        .map(Optional::get).findFirst();
-    return first.orElse(elf);
+        .map(Optional::get).findFirst().orElse(elf);
   }
-
-  public static long part1(String instructions, int rounds) {
-    var elfMatrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
-    Map<Point, String> elfs = extracted(rounds, elfMatrix);
-    var jStats =
-        elfs.keySet().stream().map(Point::j).collect(Collectors.summarizingInt(Integer::intValue));
-    var iStats =
-        elfs.keySet().stream().map(Point::i).collect(Collectors.summarizingInt(Integer::intValue));
-    var occupiedSquares = elfs.size();
-
-    return (long) (jStats.getMax() - jStats.getMin() + 1) * (iStats.getMax() - iStats.getMin() + 1)
-        - occupiedSquares;
-  }
-
   @NotNull
-  static Map<Point, String> extracted(int rounds, String[][] elfMatrix) {
+  static Map<Point, String> doIterationUntilRounds(int rounds, String[][] elfMatrix) {
     Map<Point, String> elfs = getInitState(elfMatrix);
-    var lastRoundELfs =
-        elfs.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-    final var totalElfs = elfs.size();
+    var lastRoundELfs = elfs.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     for (int r = 0; r < rounds; r++) {
-      int finalR = r;
-      var elfDestinations =
-          elfs.entrySet().stream()
-              .map(
-                  entry ->
-                      new Pair<>(
-                          new Pair<>(
-                              entry.getKey(),
-                              Point.getAdjacent(entry.getKey()).stream()
-                                  .filter(ap -> !elfs.containsKey(ap))
-                                  .toList()),
-                          entry.getValue()))
-              .map(pair -> new Pair<>(elfMove(elfs, pair.getValue0(), finalR), pair.getValue1()))
-              .toList();
-      Map<Point, List<Pair<Point, String>>> destinationCounts =
-          elfDestinations.stream().collect(Collectors.groupingBy(Pair::getValue0, Collectors.toList()));
-
-      Map<String, Point> finalLastRoundELfs = lastRoundELfs;
-      destinationCounts.entrySet().stream()
-          .filter(e -> e.getValue().size() == 1)
-          .forEach(
-              kv -> {
-                var elfName = kv.getValue().get(0).getValue1();
-                var elfPoint = kv.getValue().get(0).getValue0();
-                var oldElfCord = finalLastRoundELfs.get(elfName);
-                elfs.remove(oldElfCord);
-                elfs.put(elfPoint, elfName);
-              });
-      lastRoundELfs =
-          elfs.entrySet().stream()
+      doOneIteration(elfs, lastRoundELfs, r);
+      lastRoundELfs = elfs.entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-      assert elfs.size() == totalElfs;
-      assert lastRoundELfs.size() == totalElfs;
     }
     return elfs;
   }
 
   @NotNull
-  static int extractedUntil(String[][] elfMatrix) {
+  static int doIterationUntilStable(String[][] elfMatrix) {
     Map<Point, String> elfs = getInitState(elfMatrix);
-    var lastRoundELfs =
-        elfs.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-    final var totalElfs = elfs.size();
+    var lastRoundELfs = elfs.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     int rounds = 0;
     while(true){
-      int finalR = rounds;
-      var elfDestinations =
-          elfs.entrySet().stream()
-              .map(
-                  entry ->
-                      new Pair<>(
-                          new Pair<>(
-                              entry.getKey(),
-                              Point.getAdjacent(entry.getKey()).stream()
-                                  .filter(ap -> !elfs.containsKey(ap))
-                                  .toList()),
-                          entry.getValue()))
-              .map(pair -> new Pair<>(elfMove(elfs, pair.getValue0(), finalR), pair.getValue1()))
-              .toList();
-      Map<Point, List<Pair<Point, String>>> destinationCounts =
-          elfDestinations.stream().collect(Collectors.groupingBy(Pair::getValue0, Collectors.toList()));
-
-      Map<String, Point> finalLastRoundELfs = lastRoundELfs;
-      destinationCounts.entrySet().stream()
-          .filter(e -> e.getValue().size() == 1)
-          .forEach(
-              kv -> {
-                var elfName = kv.getValue().get(0).getValue1();
-                var elfPoint = kv.getValue().get(0).getValue0();
-                var oldElfCord = finalLastRoundELfs.get(elfName);
-                elfs.remove(oldElfCord);
-                elfs.put(elfPoint, elfName);
-              });
-      var tmp =
-          elfs.entrySet().stream()
+      doOneIteration(elfs, lastRoundELfs, rounds);
+      var currentElfs = elfs.entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-      if (tmp.equals(lastRoundELfs)){
+      if (currentElfs.equals(lastRoundELfs)){
         break;
       }
-      lastRoundELfs = tmp;
-      assert elfs.size() == totalElfs;
-      assert lastRoundELfs.size() == totalElfs;
+      lastRoundELfs = currentElfs;
       rounds ++;
     }
     return rounds;
   }
 
+  private static void doOneIteration(
+      Map<Point, String> elfs, Map<String, Point> lastRoundELfs, int itterationNumber) {
+    elfs.entrySet().stream()
+        .map(
+            entry ->
+                new Pair<>(
+                    new Pair<>(
+                        entry.getKey(),
+                        getFreePoints(Point.getAdjacent(entry.getKey()), elfs)
+                    ),
+                    entry.getValue()
+                )
+        )
+        .map(
+            pair -> new Pair<>(
+                elfMove(pair.getValue0(), itterationNumber),
+                pair.getValue1()
+            )
+        )
+        .collect(Collectors.groupingBy(Pair::getValue0, Collectors.toList()))
+        .entrySet()
+        .stream()
+        .filter(e -> e.getValue().size() == 1)
+        .forEach(
+            kv -> {
+              var elfName = kv.getValue().get(0).getValue1();
+              var elfPoint = kv.getValue().get(0).getValue0();
+              var oldElfCord = lastRoundELfs.get(elfName);
+              elfs.remove(oldElfCord);
+              elfs.put(elfPoint, elfName);
+            });
+  }
+
+  @NotNull
+  private static List<Point> getFreePoints(List<Point> entry, Map<Point, String> elfs) {
+    return entry.stream()
+        .filter(ap -> !elfs.containsKey(ap))
+        .toList();
+  }
+
   @NotNull
   static Map<Point, String> getInitState(String[][] elfMatrix) {
-    var elfs =
-        Arrays.stream(
+    return Arrays.stream(
                 StringMatrixParser.applyGenericPoseAware(
                     elfMatrix,
                     Point.class,
@@ -182,11 +142,9 @@ public class Day23 {
             .filter(Objects::nonNull)
             .collect(
                 Collectors.toMap(point -> point, point -> java.util.UUID.randomUUID().toString()));
-    return elfs;
   }
 
-
-  public static String draw(Map<Point, String> elfs) {
+  static String draw(Map<Point, String> elfs) {
     StringBuilder res = new StringBuilder();
     var jStats =
         elfs.keySet().stream().map(Point::j).collect(Collectors.summarizingInt(Integer::intValue));
@@ -206,6 +164,24 @@ public class Day23 {
     }
     System.out.println(res);
     return res.toString();
+  }
+
+  public static long part2(String instructions) {
+    var elfMatrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
+    return doIterationUntilStable(elfMatrix) + 1;
+  }
+
+  public static long part1(String instructions, int rounds) {
+    var elfMatrix = StringMatrixParser.parse(instructions, ROW_DELIMITER, "");
+    Map<Point, String> elfs = doIterationUntilRounds(rounds, elfMatrix);
+    var jStats =
+        elfs.keySet().stream().map(Point::j).collect(Collectors.summarizingInt(Integer::intValue));
+    var iStats =
+        elfs.keySet().stream().map(Point::i).collect(Collectors.summarizingInt(Integer::intValue));
+    var occupiedSquares = elfs.size();
+
+    return (long) (jStats.getMax() - jStats.getMin() + 1) * (iStats.getMax() - iStats.getMin() + 1)
+        - occupiedSquares;
   }
 
   public static void main(String[] args) {
