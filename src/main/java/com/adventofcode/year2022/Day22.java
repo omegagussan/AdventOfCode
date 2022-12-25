@@ -4,13 +4,12 @@ import com.adventofcode.utils.Point;
 import com.adventofcode.utils.StringMatrixParser;
 import com.adventofcode.utils.Vector;
 import java.io.InputStream;
-import java.security.interfaces.DSAPrivateKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
-import java.util.zip.ZipEntry;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.jetbrains.annotations.NotNull;
 
 public class Day22 {
@@ -37,55 +36,56 @@ public class Day22 {
   };
 
   public static long part1(String instructions) {
-//    String board = instructions.split(ROW_DELIMITER+ROW_DELIMITER)[0];
-//    String path = instructions.split(ROW_DELIMITER+ROW_DELIMITER)[1];
-//    var steps = path.split(String.format(WITH_DELIMITER, "[A-Z]"));
-//    var boardMatrix = StringMatrixParser.parse(board, ROW_DELIMITER, "");
-//    var paddedBoardMatrix = StringMatrixParser.parse(board, ROW_DELIMITER, "", "#");
-//    var transposedPaddedBoard = StringMatrixParser.transposeString(paddedBoardMatrix);
-//
-//    var rowConstraints = getConstraints(paddedBoardMatrix);
-//    var colConstraints = getConstraints(transposedPaddedBoard);
-//
-//    var pose = new Point(rowConstraints.get(0).getValue0(), 0);
-//    var direction = new Vector(1, 0);
-//
-//    for (String step: steps){
-//      var slize = direction.j() == 0 ? boardMatrix[pose.j()] : transposedPaddedBoard[pose.i()];
-//      var pathOfCandidatePoses = direction.byScalar(Integer.parseInt(step.substring(0, step.length() -1)))
-//          .consistsOf(pose, slize.length);
-//
-//      Point old = null;
-//      for (Point point : pathOfCandidatePoses){
-//        int candidate =
-//            direction.j() == 0
-//                ? point.i() - rowConstraints.get(point.j()).getValue0()
-//                : point.j() - colConstraints.get(pathOfCandidatePoses.size()).getValue0();
-//        String candidateValue = slize[candidate];
-//        if (Objects.equals(candidateValue, "#")){
-//          break;
-//        }
-//        old = point;
-//      }
-//      pose = old;
-//      direction = direction.turn(step.substring(step.length()-1));
-//      System.out.println(direction);
-//      System.out.println(pose);
-//      System.out.println(" ");
-//    }
-//    return (pose.j() + 1) * 1000 + 4 * (pose.i() + 1) + score(direction);
-    return 2L;
+    String board = instructions.split(ROW_DELIMITER+ROW_DELIMITER)[0];
+    var boardMatrix = StringMatrixParser.parse(board, ROW_DELIMITER, "");
+    var paddedBoardMatrix = StringMatrixParser.parse(board, ROW_DELIMITER, "", "Z");
+    var transposedBoard = StringMatrixParser.transposeString(paddedBoardMatrix);
+    var paddedTransposedBoard = StringMatrixParser.transposeGeneric(paddedBoardMatrix, String.class);
+
+    var rowConstraints = getConstraints(paddedBoardMatrix);
+    var colConstraints = getConstraints(paddedTransposedBoard);
+
+    var pose = new Point(rowConstraints.get(0).getValue0(), 0);
+    var direction = new Vector(1, 0);
+
+    String path = instructions.split(ROW_DELIMITER+ROW_DELIMITER)[1];
+    var steps = path.split(String.format(WITH_DELIMITER, "[A-Z]"));
+    for (String step: steps){
+      var sliceOfBoardToStep = direction.j() == 0 ? boardMatrix[pose.j()] : transposedBoard[pose.i()];
+      var pathOfStepsWithoutWrapAround = direction.byScalar(Integer.parseInt(step.substring(0, step.length() -1)))
+          .consistsOf(pose);
+
+      Point old = pathOfStepsWithoutWrapAround.get(0);
+      for (Point point : pathOfStepsWithoutWrapAround){
+        var constraits = direction.j() == 0 ? rowConstraints.get(point.j()) : colConstraints.get(point.i());
+        int dimensions = direction.j() == 0 ? point.i() : point.j();
+        int candidateIdx = (dimensions - constraits.getValue0()) % constraits.getValue2();
+        assert (candidateIdx + constraits.getValue0()) <= constraits.getValue1();
+        assert (candidateIdx + constraits.getValue0()) >= constraits.getValue0();
+
+        if (Objects.equals(sliceOfBoardToStep[candidateIdx], "#")){
+          break;
+        }
+        old = direction.j() == 0 ? new Point(candidateIdx + constraits.getValue0(), point.j()) : new Point(point.i(), candidateIdx + constraits.getValue0());
+      }
+      pose = old;
+      direction = direction.turn(step.substring(step.length()-1));
+      System.out.println(direction);
+      System.out.println(pose);
+      System.out.println(" ");
+    }
+    return (pose.j() + 1) * 1000 + 4 * (pose.i() + 1) + score(direction);
   }
 
   @NotNull
-  private static List<Pair<Integer, Integer>> getConstraints(String[][] matrix) {
+  private static List<Triplet<Integer, Integer, Integer>> getConstraints(String[][] matrix) {
     return Arrays.stream(matrix).map(arr -> {
       var from = IntStream.range(0, arr.length)
           .mapToObj(i -> new Pair<>(i, arr[i]))
-          .filter(p -> !p.getValue1().equals("#"))
+          .filter(p -> !p.getValue1().equals("Z"))
           .findFirst().get().getValue0();
-      var to = from + arr.length;
-      return new Pair<>(from, to);
+      var to = from + arr.length - 1;
+      return new Triplet<>(from, to, to -from);
     }).toList();
   }
 

@@ -33,19 +33,20 @@ public class StringMatrixParser {
     return target;
   }
 
-//  public static String[][] transposeString(String [][] input){
-//    var a = String.join((CharSequence) "", IntStream.range(0, input.length)
-//        .mapToObj(i -> Stream.of(input).map(r -> r.length > i ? r[i] : null)
-//            .filter(Objects::nonNull).toList()).toList());
-//    while (a.startsWith("#")){
-//      a = a.substring(1);
-//    }
+  public static String[][] transposeString(String [][] input){
+    return IntStream.range(0, input.length)
+        .mapToObj(i -> {
+          var column = Stream.of(input).map(r -> r.length > i ? r[i] : null).filter(Objects::nonNull).toList();
+          var stringColumn = String.join("", column);
+          stringColumn = stringColumn.replaceAll("Z", "");
+          return Arrays.stream(stringColumn.split("")).toArray(String[]::new);
+        }).toArray(String[][]::new);
+
 //    return IntStream.range(0, input.length)
 //        .mapToObj(i -> Stream.of(input).map(r -> r.length > i ? r[i] : null)
 //            .filter(Objects::nonNull).toArray(String[]::new))
 //        .toArray(String[][]::new);
-//  }
-
+  }
 
   public static <T, R> R[][] applyGeneric(T[][] input, Class<R> clz, Function<T,R> fun){
     R[][] target = (R[][]) Array.newInstance(clz, input.length, input[0].length);
