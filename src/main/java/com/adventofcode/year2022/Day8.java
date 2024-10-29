@@ -83,7 +83,7 @@ public class Day8 {
 
     public static void main(String[] args){
         try {
-            InputStream i = Day8.class.getClassLoader().getResourceAsStream("2022/day8.txt");
+            InputStream i = Day8.class.getClassLoader().getResourceAsStream("2022/day9.txt");
             String instructions = new String(i.readAllBytes());
             var matrix = StringMatrixParser.parse(instructions, "\n", "");
             var intMatrix = StringMatrixParser.applyGeneric(matrix, Integer.class, Integer::valueOf);
