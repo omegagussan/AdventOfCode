@@ -25,9 +25,6 @@ public class Day9 {
     record Key(String from, String to) {
     }
 
-    record Node(String name, List<Node> paths) {
-    }
-
     public static int part1(List<String> instructions) {
         List<String> destinationsWithDuplicates = instructions.stream().flatMap(s -> Arrays.stream(s.split(" = ")[0].split(" to "))).toList();
         Set<String> destinationsSet = new HashSet<>(destinationsWithDuplicates);
