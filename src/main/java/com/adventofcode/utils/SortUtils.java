@@ -1,6 +1,19 @@
 package com.adventofcode.utils;
 
 public class SortUtils {
+
+    //O(n^2) -- good for almost sorted arrays
+    public static void insertSort(int[] arr) {
+        for (int i = 1; i < arr.length; i++) {
+            int elem = arr[i];
+            int j = i - 1;
+            while (j >= 0 && arr[j] > elem) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = elem;
+        }
+    }
     public static void quickSort(int[] arr, int low, int high) {
         if (low < high) {
             int pi = partition(arr, low, high);

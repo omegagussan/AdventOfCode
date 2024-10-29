@@ -19,4 +19,11 @@ class SortUtilsTest {
         SortUtils.mergeSort(arr, 0, arr.length - 1);
         assertArrayEquals(new int[]{5, 6, 7, 11, 12, 13}, arr);
     }
+
+    @Test
+    void testInsertSort() {
+        int[] arr = {12, 11, 13, 5, 6, 7};
+        SortUtils.insertSort(arr);
+        assertArrayEquals(new int[]{5, 6, 7, 11, 12, 13}, arr);
+    }
 }
