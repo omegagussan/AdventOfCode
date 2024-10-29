@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class GraphUtilsTest extends TestCase {
     @Test
     public void testBFSVisitsAllNodes() {
@@ -58,8 +56,8 @@ public class GraphUtilsTest extends TestCase {
         assertEquals(child1, node);
     }
 
-    @org.junit.jupiter.api.Test
-    void DFSVisitsAllNodes() {
+    @Test
+    public void testDFSVisitsAllNodes() {
         GraphNode root = new GraphNode("A", 1);
         GraphNode child1 = new GraphNode("B", 2);
         GraphNode child2 = new GraphNode("C", 3);
@@ -74,8 +72,8 @@ public class GraphUtilsTest extends TestCase {
         assertEquals(Set.of("A", "B", "C"), visited);
     }
 
-    @org.junit.jupiter.api.Test
-    void DFSStopsAtCondition() {
+    @Test
+    public void testDFSStopsAtCondition() {
         GraphNode root = new GraphNode("A", 1);
         GraphNode child1 = new GraphNode("B", 2);
         GraphNode child2 = new GraphNode("C", 3);
@@ -89,4 +87,34 @@ public class GraphUtilsTest extends TestCase {
 
         assertEquals(Set.of("A", "B", "C"), visited);
     }
+
+    @Test
+    public void testDijkstraVisitsAllNodes() {
+        GraphNode root = new GraphNode("A", 1);
+        GraphNode child1 = new GraphNode("B", 2);
+        GraphNode child2 = new GraphNode("C", 3);
+        root.addChild(child1);
+        root.addChild(child2);
+
+        Function<GraphNode, Integer> weightFunction = node -> node.value().get();
+        Function<GraphNode, Boolean> stopCondition = node -> node.id().get().equals("C");
+        var res = GraphUtils.Dijkstra(root, weightFunction, stopCondition);
+        assertEquals(List.of("C", "A"), GraphUtils.lineage(res).stream().map(node -> node.id().get()).toList());
+    }
+
+    @Test
+    public void testDijkstraStopsAtCondition() {
+        GraphNode root = new GraphNode("A", 1);
+        GraphNode child1 = new GraphNode("B", 2);
+        GraphNode child2 = new GraphNode("C", 3);
+        root.addChild(child1);
+        root.addChild(child2);
+
+        Function<GraphNode, Integer> weightFunction = node -> node.value().get();
+        Function<GraphNode, Boolean> stopCondition = node -> node.id().get().equals("B");
+        var node = GraphUtils.Dijkstra(root, weightFunction, stopCondition);
+
+        assertEquals(child1, node);
+    }
+
 }

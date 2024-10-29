@@ -59,4 +59,22 @@ public class GraphUtils {
         }
         return null;
     }
+
+    public static GraphNode Dijkstra(GraphNode root, Function<GraphNode, Integer> weightFunction,  Function<GraphNode, Boolean> stopCondition) {
+        PriorityQueue<GraphNode> queue = new PriorityQueue<>(Comparator.comparingInt(weightFunction::apply));
+        Set<String> visited = new HashSet<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            GraphNode node = queue.poll();
+            if (stopCondition.apply(node)) {
+                return node;
+            }
+            if (visited.contains(node.id().get())) {
+                continue;
+            }
+            visited.add(node.id().get());
+            queue.addAll(node.children());
+        }
+        return null;
+    }
 }
