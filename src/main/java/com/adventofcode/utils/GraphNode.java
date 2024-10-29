@@ -4,22 +4,29 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public record GraphNode(
+    AtomicReference<GraphNode> parent,
     Optional<String> id,
     Optional<Integer> value,
     ArrayList<GraphNode> children) {
 
     public void addChild(GraphNode child) {
+        child.setParent(this);
         this.children.add(child);
     }
 
+    public void setParent(GraphNode parent) {
+        this.parent.set(parent);
+    }
+
     public GraphNode(String name, Integer value) {
-        this(Optional.of(name), Optional.of(value), new ArrayList<>(List.of()));
+        this(new AtomicReference<>(), Optional.of(name), Optional.of(value), new ArrayList<>(List.of()));
     }
 
     public GraphNode(Integer value) {
-        this(Optional.empty(), Optional.of(value), new ArrayList<>(List.of()));
+        this(new AtomicReference<>(), Optional.empty(), Optional.of(value), new ArrayList<>(List.of()));
     }
 
 

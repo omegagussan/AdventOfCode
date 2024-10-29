@@ -26,17 +26,37 @@ public class GraphUtils {
         return null;
     }
 
+    public static List<GraphNode> lineage(GraphNode node) {
+        List<GraphNode> lineage = new ArrayList<>();
+        GraphNode current = node;
+        while (current != null) {
+            lineage.add(current);
+            current = current.parent().get();
+        }
+        return lineage;
+    }
+
+
     public static GraphNode BFS(GraphNode root, Function<GraphNode, Boolean> stopCondition) {
         return BFS(root, stopCondition, null);
     }
 
-    public static void DFS(GraphNode root, Consumer<GraphNode> visitConsumer, Function<GraphNode, Boolean> stopCondition) {
-        visitConsumer.accept(root);
-        if (stopCondition.apply(root)) {
-            return;
+    public static GraphNode DFS(GraphNode root, Consumer<GraphNode> visitConsumer, Function<GraphNode, Boolean> stopCondition) {
+        List<String> visited = new ArrayList<>();
+        return DFSRecursivePart(root, visitConsumer, stopCondition, visited);
+    }
+
+    private static GraphNode DFSRecursivePart(GraphNode curr, Consumer<GraphNode> visitConsumer, Function<GraphNode, Boolean> stopCondition, List<String> visited) {
+        visited.add(curr.id().get());
+        visitConsumer.accept(curr);
+        if (stopCondition.apply(curr)) {
+            return curr;
         }
-        for (GraphNode child : root.children()) {
-            DFS(child, visitConsumer, stopCondition);
+        for (GraphNode child : curr.children()) {
+            if (!visited.contains(child.id().get())) {
+                DFSRecursivePart(child, visitConsumer, stopCondition, visited);
+            }
         }
+        return null;
     }
 }
