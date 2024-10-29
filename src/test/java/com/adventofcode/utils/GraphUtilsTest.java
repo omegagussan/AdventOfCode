@@ -3,12 +3,12 @@ package com.adventofcode.utils;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class GraphUtilsTest extends TestCase {
-
     @Test
     public void testBFSVisitsAllNodes() {
         GraphNode root = new GraphNode("A", 1);
@@ -17,14 +17,15 @@ public class GraphUtilsTest extends TestCase {
         root.addChild(child1);
         root.addChild(child2);
 
-        Set<String> visitedNodes = new HashSet<>();
-        Consumer<GraphNode> graphNodeConsumer = node -> visitedNodes.add(node.id().get());
-        Function<GraphNode, Boolean> exitCondition = node -> visitedNodes.contains("C");
-        GraphUtils.BFS(root, graphNodeConsumer, exitCondition);
+        Set<String> visited = new HashSet<>();
+        Function<GraphNode, Boolean> exitCondition = node -> false;
+        Consumer<GraphNode> visitConsumer = node -> {
+            visited.add(node.id().get());
+        };
+        var node = GraphUtils.BFS(root, exitCondition, visitConsumer);
 
-        var expected = Set.of("A", "B", "C");
-
-        assertEquals(expected, visitedNodes);
+        assertEquals(Set.of("A", "B", "C"), visited);
+        assertEquals(null, node);
     }
 
     @Test
@@ -35,13 +36,9 @@ public class GraphUtilsTest extends TestCase {
         root.addChild(child1);
         root.addChild(child2);
 
-        Set<String> visitedNodes = new HashSet<>();
-        Consumer<GraphNode> graphNodeConsumer = node -> visitedNodes.add(node.id().get());
         Function<GraphNode, Boolean> exitCondition = node -> node.id().get().equals("B");
-        GraphUtils.BFS(root, graphNodeConsumer, exitCondition);
+        var node = GraphUtils.BFS(root, exitCondition);
 
-        var expected = Set.of("A", "B");
-
-        assertEquals(expected, visitedNodes);
+        assertEquals(child1, node);
     }
 }
