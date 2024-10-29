@@ -8,7 +8,7 @@ import java.util.*;
 public class Day12 {
     public static void main(String[] args) {
         try {
-            InputStream i = Day7.class.getClassLoader().getResourceAsStream("2015/day12.json");
+            InputStream i = Day12.class.getClassLoader().getResourceAsStream("2015/day12.json");
             Scanner s = new Scanner(i).useDelimiter(System.lineSeparator());
             StringBuilder jsonString = new StringBuilder();
             while (s.hasNextLine()) {
@@ -17,26 +17,39 @@ public class Day12 {
             s.close();
             Gson gson = new Gson();
             Object o = gson.fromJson(jsonString.toString(), Object.class);
-            System.out.println(sumJsonLeafs(o));
+            System.out.println(sumJsonLeafsIncludingRed(o));
+            System.out.println(sumJsonLeafsExcludeRed(o));
+
         } catch (Exception e) {
             System.err.println("Something went poorly");
             e.printStackTrace();
         }
     }
 
-    public static int sumJsonLeafs(Object o) {
+    public static int sumJsonLeafsIncludingRed(Object o) {
+        return sumJson(o, false);
+    }
+
+    public static int sumJsonLeafsExcludeRed(Object o) {
+        return sumJson(o, true);
+    }
+
+    public static int sumJson(Object o, boolean ignoreRed) {
         if (o instanceof Double d) {
             return d.intValue();
         } else if (o instanceof List) {
             int sum = 0;
             for (Object i : (List) o) {
-                sum += sumJsonLeafs(i);
+                sum += sumJson(i, ignoreRed);
             }
             return sum;
         } else if (o instanceof Map) {
             int sum = 0;
             for (Object i : ((Map) o).values()) {
-                sum += sumJsonLeafs(i);
+                if (ignoreRed && i instanceof String s && s.equals("red")) {
+                    return 0;
+                }
+                sum += sumJson(i, ignoreRed);
             }
             return sum;
         }
