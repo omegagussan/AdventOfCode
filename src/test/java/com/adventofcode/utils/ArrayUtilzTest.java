@@ -85,4 +85,17 @@ public class ArrayUtilzTest extends TestCase {
         );
         assertEquals(expected, ArrayUtilz.combinatorics(input));
     }
+
+    @Test
+    public void testCombinatoricsGeneratesCombinationsWithDuplicates() {
+        List<Integer> input = List.of(1, 1, 2);
+        List<List<Integer>> expected = List.of(
+                List.of(1),
+                List.of(1, 1),
+                List.of(1, 1, 2),
+                List.of(1, 2),
+                List.of(2)
+        );
+        assertEquals(expected, ArrayUtilz.combinatorics(input));
+    }
 }
