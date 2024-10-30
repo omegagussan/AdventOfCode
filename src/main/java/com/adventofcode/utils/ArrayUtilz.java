@@ -37,6 +37,25 @@ public class ArrayUtilz {
         return result;
     }
 
+    //should be len(arr)! long
+    public static <T> List<List<T>> combinatorics(List<T> list) {
+        List<List<T>> result = new ArrayList<>();
+        HashSet<List<T>> set = new HashSet<>();
+        var p = permutations(list);
+        for (List<T> perm : p) {
+            for (int i = 1; i <= perm.size(); i++) {
+                var sublist = perm.subList(0, i);
+                var s = sublist.stream().sorted().toList();
+                if (set.contains(s)) {
+                    continue;
+                }
+                set.add(s);
+                result.add(s);
+            }
+        }
+        return result;
+    }
+
     public static <T> List<List<T>> permutations(List<T> given) {
         if (given.size() == 1) {
             return List.of(given);

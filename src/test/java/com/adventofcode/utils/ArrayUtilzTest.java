@@ -70,4 +70,19 @@ public class ArrayUtilzTest extends TestCase {
         List<List<Integer>> expected = List.of();
         assertEquals(expected, ArrayUtilz.permutations(input));
     }
+
+    @Test
+    public void testCombinatoricsGeneratesCombinations() {
+        List<Integer> input = List.of(1, 2, 3);
+        List<List<Integer>> expected = List.of(
+                List.of(1),
+                List.of(1, 2),
+                List.of(1, 2, 3),
+                List.of(1, 3),
+                List.of(2),
+                List.of(2, 3),
+                List.of(3)
+        );
+        assertEquals(expected, ArrayUtilz.combinatorics(input));
+    }
 }
