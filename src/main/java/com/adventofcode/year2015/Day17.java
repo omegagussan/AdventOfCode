@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.adventofcode.utils.ArrayUtilz.combinatorics;
+import static com.google.common.collect.Sets.combinations;
 
 public class Day17 {
     public static void main(String[] args) {
@@ -23,17 +23,20 @@ public class Day17 {
     }
 
     public static int part1(List<Integer> instructions, int target) {
-        Map<Integer, Long> ocurrances = instructions.stream().collect(Collectors.groupingBy(integer -> integer, Collectors.counting()));
         int j = 0;
-        var c = combinatorics(instructions);
-        for (List<Integer> l : c) {
-            if (l.stream().mapToInt(Integer::intValue).sum() == target) {
-                Long reduce = l.stream().map(i -> {
-                    long totalOccurances = ocurrances.get(i);
-                    long occurancesInSolution = l.stream().filter(integer -> integer.longValue() == i).count();
-                    return totalOccurances + 1 - occurancesInSolution;
-                }).reduce(1L, (a, b) -> a * b);
-                j += reduce;
+        var instructionsSet = new HashSet<>(instructions);
+        Map<Integer, Long> ocurrances = instructions.stream().collect(Collectors.groupingBy(integer -> integer, Collectors.counting()));
+        for (int i = 2; i < instructionsSet.size(); i++) {
+            var c = combinations(instructionsSet, i);
+            for (var l : c) {
+                if (l.stream().mapToInt(Integer::intValue).sum() == target) {
+                    Long reduce = l.stream().map(x -> {
+                        long totalOccurances = ocurrances.get(x);
+                        long occurancesInSolution = l.stream().filter(integer -> integer.longValue() == x).count();
+                        return totalOccurances + 1 - occurancesInSolution;
+                    }).reduce(1L, (a, b) -> a * b);
+                    j += reduce;
+                }
             }
         }
         return j;
