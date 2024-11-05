@@ -16,6 +16,7 @@ public class Day2 {
                 instructions.add(s.next());
             }
             System.out.println(part1(instructions));
+            System.out.println(part2(instructions));
         } catch (Exception e) {
             System.err.println("Something went poorly");
             e.printStackTrace();
@@ -31,10 +32,30 @@ public class Day2 {
         return sum;
     }
 
+    public static int part2(List<String> instructions) {
+        var sum = 0;
+        for (var line : instructions) {
+            sum += parseLine2(line);
+        }
+        return sum;
+    }
+
     static int parseLine(String line) {
         var numbers = Arrays.stream(line.split("\t")).map(String::trim).map(Integer::parseInt).toList();
         var sorted = numbers.stream().sorted().toList();
         return sorted.get(sorted.size() - 1) - sorted.get(0);
+    }
+
+    static int parseLine2(String line) {
+        var numbers = Arrays.stream(line.split("\t")).map(String::trim).map(Integer::parseInt).toList();
+        for (var i : numbers) {
+            for (var j : numbers) {
+                if (i != j && i % j == 0) {
+                    return i / j;
+                }
+            }
+        }
+        return 0;
     }
 }
 
