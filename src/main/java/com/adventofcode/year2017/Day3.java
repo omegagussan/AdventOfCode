@@ -31,6 +31,5 @@ public class Day3 {
         int stepsToAxis = Math.abs((source - last * last) % axis);
         return axis + stepsToAxis;
     }
-
 }
 
