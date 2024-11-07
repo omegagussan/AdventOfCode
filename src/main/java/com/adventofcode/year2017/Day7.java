@@ -10,13 +10,6 @@ public class Day7 {
         public int totalWeight() {
             return weight + children.stream().mapToInt(Disc::totalWeight).sum();
         }
-
-        public List<String> contains() {
-            List<String> list = new ArrayList<>();
-            list.add(name);
-            list.addAll(children.stream().flatMap(d -> d.contains().stream()).toList());
-            return list;
-        }
     }
 
 
@@ -58,35 +51,40 @@ public class Day7 {
         return findCommon(childrenTotalWeights) - childrenTotalWeights.get(index) + childrenWeights.get(index);
     }
 
+    public static Disc parseDisc(ArrayList<String> parts){
+        String name = parts.remove(0);
+        String intPart = parts.remove(0);
+        int weight = Integer.parseInt(intPart.substring(1, intPart.length() - 1));
+        return new Disc(name, weight, new ArrayList<>());
+    }
+
     public static Disc parseDiscs(List<String> discs) {
+        //this is an optimization
+        List<String> sortd = discs.stream().sorted(Comparator.comparingInt(String::length)).toList();
+        var remaining = new ArrayList<>(sortd);
+        Disc disc = null;
         Map<String, Disc> d = new HashMap<>(Map.of());
-        var i = 0;
         outer:
-        while (true) {
-            var disc = discs.get(i % discs.size());
-            i++;
-            String[] parts = disc.split(" ");
-            String name = parts[0];
-            if (d.containsKey(name)) {
-                continue outer;
+        while (!remaining.isEmpty()) {
+            var curr = remaining.remove(0);
+            ArrayList<String> s = new ArrayList<>(List.of(curr.split(" ")));
+            disc = parseDisc(s);
+            if (d.containsKey(disc.name)) {
+                continue;
             }
-            int weight = Integer.parseInt(parts[1].substring(1, parts[1].length() - 1));
-            List<Disc> children = new ArrayList<>();
-            if (parts.length > 2) {
-                List<String> list = Arrays.stream(disc.split(" -> ")[1].split(", ")).toList();
+            if (!s.isEmpty()) {
+                List<String> list = Arrays.stream(curr.split(" -> ")[1].split(", ")).toList();
                 for (String child : list) {
                     Disc e = d.get(child);
                     if (e == null) {
+                        remaining.add(curr);
                         continue outer;
                     }
-                    children.add(e);
+                    disc.children.add(e);
                 }
             }
-            Disc value = new Disc(name, weight, children);
-            d.put(name, value);
-            if (value.contains().size() == discs.size()) {
-                return value;
-            }
+            d.put(disc.name, disc);
         }
+        return disc;
     }
 }
