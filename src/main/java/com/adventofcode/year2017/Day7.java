@@ -12,7 +12,6 @@ public class Day7 {
         }
     }
 
-
     public static void main(String[] args) {
         try {
             InputStream i = Day7.class.getClassLoader().getResourceAsStream("2017/day7.txt");
@@ -23,7 +22,7 @@ public class Day7 {
             }
             Disc x = parseDiscs(instructions);
             System.out.println(x.name);
-            System.out.println(balanceDisc(x).get());
+            System.out.println(balanceDisc(x).orElseThrow());
         } catch (Exception e) {
             System.err.println("Something went poorly");
             e.printStackTrace();
@@ -31,31 +30,39 @@ public class Day7 {
     }
 
     public static Optional<Integer> findUnique(List<Integer> discs) {
-        return discs.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().filter(e -> e.getValue() == 1).findFirst().map(Map.Entry::getKey);
+        return discs.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream()
+                .filter(e -> e.getValue() == 1)
+                .map(Map.Entry::getKey)
+                .findFirst();
     }
+
     public static Integer findCommon(List<Integer> discs) {
-        return discs.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().filter(e -> e.getValue() > 1).findFirst().map(Map.Entry::getKey).get();
+        return discs.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream()
+                .filter(e -> e.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElseThrow();
     }
+
     public static Optional<Integer> balanceDisc(Disc d) {
         List<Integer> childrenTotalWeights = d.children.stream().map(Disc::totalWeight).toList();
         var possibleUnique = findUnique(childrenTotalWeights);
 
-        Optional<Integer> i = possibleUnique.flatMap((unique) -> {
+        return possibleUnique.flatMap(unique -> {
             int index = childrenTotalWeights.indexOf(unique);
             return balanceDisc(d.children.get(index));
-        });
-        if (i.isPresent()) {
-            return i;
-        }
-
-        return possibleUnique.map((unique) -> {
+        }).or(() -> possibleUnique.map(unique -> {
             int index = childrenTotalWeights.indexOf(unique);
             List<Integer> childrenWeights = d.children.stream().map(Disc::weight).toList();
             return findCommon(childrenTotalWeights) - childrenTotalWeights.get(index) + childrenWeights.get(index);
-        });
+        }));
     }
 
-    public static Disc parseDisc(ArrayList<String> parts){
+    public static Disc parseDisc(List<String> parts) {
         String name = parts.remove(0);
         String intPart = parts.remove(0);
         int weight = Integer.parseInt(intPart.substring(1, intPart.length() - 1));
