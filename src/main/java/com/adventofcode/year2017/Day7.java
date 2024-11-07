@@ -23,7 +23,7 @@ public class Day7 {
             }
             Disc x = parseDiscs(instructions);
             System.out.println(x.name);
-            System.out.println(balanceDisc(x));
+            System.out.println(balanceDisc(x).get());
         } catch (Exception e) {
             System.err.println("Something went poorly");
             e.printStackTrace();
@@ -36,19 +36,23 @@ public class Day7 {
     public static Integer findCommon(List<Integer> discs) {
         return discs.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().filter(e -> e.getValue() > 1).findFirst().map(Map.Entry::getKey).get();
     }
-    public static int balanceDisc(Disc d) {
+    public static Optional<Integer> balanceDisc(Disc d) {
         List<Integer> childrenTotalWeights = d.children.stream().map(Disc::totalWeight).toList();
-        List<Integer> childrenWeights = d.children.stream().map(Disc::weight).toList();
         var possibleUnique = findUnique(childrenTotalWeights);
-        if (possibleUnique.isEmpty()) {
-            return 0;
+
+        Optional<Integer> i = possibleUnique.flatMap((unique) -> {
+            int index = childrenTotalWeights.indexOf(unique);
+            return balanceDisc(d.children.get(index));
+        });
+        if (i.isPresent()) {
+            return i;
         }
-        int index = childrenTotalWeights.indexOf(possibleUnique.get());
-        int balanced = balanceDisc(d.children.get(index));
-        if (balanced != 0) {
-            return balanced;
-        }
-        return findCommon(childrenTotalWeights) - childrenTotalWeights.get(index) + childrenWeights.get(index);
+
+        return possibleUnique.map((unique) -> {
+            int index = childrenTotalWeights.indexOf(unique);
+            List<Integer> childrenWeights = d.children.stream().map(Disc::weight).toList();
+            return findCommon(childrenTotalWeights) - childrenTotalWeights.get(index) + childrenWeights.get(index);
+        });
     }
 
     public static Disc parseDisc(ArrayList<String> parts){
